@@ -4,3 +4,6 @@
 [submodule "lib/ilookup"]
 	path = lib/ilookup
 	url = git@github.com:uniteum/ilookup.git
+[submodule "lib/clones"]
+	path = lib/clones
+	url = git@github.com:uniteum/clones.git
