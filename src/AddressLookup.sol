@@ -18,20 +18,21 @@ contract AddressLookup is IAddressLookup, IUintToAddressCloner {
     address public immutable PROTO = address(this);
 
     /// @inheritdoc IAddressLookup
-    function value() external view returns (address) {
-        return _value;
-    }
+    address public value;
 
     /// @inheritdoc IUintToAddressCloner
-    function cloneAddress(KeyValue[] memory keyValues) public view returns (address expected, bytes32 salt) {
+    function made(KeyValue[] memory keyValues) public view returns (bool exists, address home, bytes32 salt) {
         salt = keccak256(abi.encode(keyValues));
-        expected = Clones.predictDeterministicAddress(PROTO, salt, PROTO);
+        home = Clones.predictDeterministicAddress(PROTO, salt, PROTO);
+        exists = home.code.length > 0;
     }
 
     /// @inheritdoc IUintToAddressCloner
-    function clone(KeyValue[] memory keyValues) public returns (address expected, bytes32 salt) {
-        (expected, salt) = cloneAddress(keyValues);
-        if (expected.code.length == 0) {
+    function make(KeyValue[] memory keyValues) public returns (address home) {
+        bool exists;
+        bytes32 salt;
+        (exists, home, salt) = made(keyValues);
+        if (!exists) {
             address value_;
             for (uint256 i; i < keyValues.length; ++i) {
                 if (keyValues[i].key == block.chainid) {
@@ -40,13 +41,12 @@ contract AddressLookup is IAddressLookup, IUintToAddressCloner {
                 }
             }
             Clones.cloneDeterministic(address(this), salt, 0);
-            AddressLookup(expected).zzInit(value_);
-            emit Cloned(expected, salt);
+            AddressLookup(home).zzInit(value_);
+            emit Made(home, salt);
         }
     }
 
     bool private _initialized;
-    address private _value;
 
     /// @dev Prevent the implementation contract from being initialized.
     constructor() {
@@ -56,8 +56,8 @@ contract AddressLookup is IAddressLookup, IUintToAddressCloner {
     /// @dev Only let the owner set the value address after cloning.
     /// @param value_ The value address for the current chain.
     function zzInit(address value_) public {
-        if (_initialized) revert InitializedAlready();
+        if (_initialized) revert MadeAlready();
         _initialized = true;
-        _value = value_;
+        value = value_;
     }
 }
