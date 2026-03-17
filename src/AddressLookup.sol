@@ -2,7 +2,7 @@
 pragma solidity ^0.8.30;
 
 import {IAddressLookup} from "ilookup/IAddressLookup.sol";
-import {IUintToAddressCloner} from "ilookup/IUintToAddressCloner.sol";
+import {IUintToAddressMaker} from "ilookup/IUintToAddressMaker.sol";
 import {Clones} from "clones/Clones.sol";
 
 /// @notice Immutably map a single predictable contract address to a chain specific address.
@@ -14,20 +14,20 @@ import {Clones} from "clones/Clones.sol";
 /// bridges, and explorers that require a single uniform reference across chains.
 /// @dev The implementation is also a factory, allowing anyone to easily deploy an AddressLookups.
 /// @author Paul Reinholdtsen (reinholdtsen.eth)
-contract AddressLookup is IAddressLookup, IUintToAddressCloner {
+contract AddressLookup is IAddressLookup, IUintToAddressMaker {
     address public immutable PROTO = address(this);
 
     /// @inheritdoc IAddressLookup
     address public value;
 
-    /// @inheritdoc IUintToAddressCloner
+    /// @inheritdoc IUintToAddressMaker
     function made(KeyValue[] memory keyValues) public view returns (bool exists, address home, bytes32 salt) {
         salt = keccak256(abi.encode(keyValues));
         home = Clones.predictDeterministicAddress(PROTO, salt, PROTO);
         exists = home.code.length > 0;
     }
 
-    /// @inheritdoc IUintToAddressCloner
+    /// @inheritdoc IUintToAddressMaker
     function make(KeyValue[] memory keyValues) public returns (address home) {
         bool exists;
         bytes32 salt;
