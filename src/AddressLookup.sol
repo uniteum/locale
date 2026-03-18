@@ -13,7 +13,6 @@ import {Clones} from "clones/Clones.sol";
 /// Typical uses include cross-chain endpoints (oracles, messengers, executors), wallets,
 /// bridges, and explorers that require a single uniform reference across chains.
 /// @dev The implementation is also a factory, allowing anyone to easily deploy an AddressLookups.
-/// @author Paul Reinholdtsen (reinholdtsen.eth)
 contract AddressLookup is IAddressLookup, IUintToAddressMaker {
     address public immutable PROTO = address(this);
 
@@ -46,18 +45,10 @@ contract AddressLookup is IAddressLookup, IUintToAddressMaker {
         }
     }
 
-    bool private _initialized;
-
-    /// @dev Prevent the implementation contract from being initialized.
-    constructor() {
-        _initialized = true;
-    }
-
-    /// @dev Only let the owner set the value address after cloning.
+    /// @dev Only PROTO should call zzInit.
     /// @param value_ The value address for the current chain.
     function zzInit(address value_) public {
-        if (_initialized) revert MadeAlready();
-        _initialized = true;
+        if (msg.sender != PROTO) revert Unauthorized();
         value = value_;
     }
 }
