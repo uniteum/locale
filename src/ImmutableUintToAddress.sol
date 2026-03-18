@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity ^0.8.30;
 
 import {IUintToAddress} from "ilookup/IUintToAddress.sol";
@@ -18,6 +17,7 @@ contract ImmutableUintToAddress is IUintToAddress, IUintToAddressMaker {
     /// @inheritdoc IUintToAddress
     mapping(uint256 => address) public valueOf;
 
+    /// @inheritdoc IUintToAddress
     function length() external view returns (uint256) {
         return keyAt.length;
     }
