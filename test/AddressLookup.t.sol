@@ -3,7 +3,7 @@ pragma solidity ^0.8.30;
 
 import {AddressLookup} from "../src/AddressLookup.sol";
 
-import "forge-std/Test.sol";
+import {Test} from "forge-std/Test.sol";
 
 contract AddressLookupTest is Test {
     AddressLookup proto;
@@ -18,6 +18,7 @@ contract AddressLookupTest is Test {
 
     // setUp() is always run before each test
     function setUp() public {
+        // forge-lint: disable-next-line(unsafe-cheatcode)
         config = abi.decode(vm.parseJson(vm.readFile("test/endpoint.json")), (Config));
         // CREATE2 for proto, so its address is stable across our snapshots
         proto = new AddressLookup{salt: 0x0}();
@@ -89,11 +90,11 @@ contract AddressLookupTest is Test {
     // Show determinism across chain IDs (prediction)
     function test_AddressLookupSamePredictedAddressAcrossChainIds() public {
         // Pick any two distinct chain IDs you care about
-        uint256 CHAIN_A = 1; // Ethereum mainnet
-        uint256 CHAIN_B = 8453; // Base mainnet (example)
+        uint256 chainA = 1; // Ethereum mainnet
+        uint256 chainB = 8453; // Base mainnet (example)
 
-        (address pA, bytes32 sA) = _predictUnder(CHAIN_A);
-        (address pB, bytes32 sB) = _predictUnder(CHAIN_B);
+        (address pA, bytes32 sA) = _predictUnder(chainA);
+        (address pB, bytes32 sB) = _predictUnder(chainB);
 
         // If your salt/bytecode/deployer are the same and you don't bake chainid into your salt,
         // these should be identical.
@@ -103,22 +104,22 @@ contract AddressLookupTest is Test {
 
     // Show determinism across chain IDs (deployment)
     function test_AddressLookupSameDeployedAddressAcrossChainIds() public {
-        uint256 CHAIN_A = 1;
-        uint256 CHAIN_B = 8453;
+        uint256 chainA = 1;
+        uint256 chainB = 8453;
 
         // Take a clean snapshot of the world right after setUp()
         uint256 snap = vm.snapshotState();
 
-        // Deploy under CHAIN_A
-        address dA = _deployUnder(CHAIN_A);
-        assertNotEq(dA, address(0), "Deploy on CHAIN_A failed");
+        // Deploy under chainA
+        address dA = _deployUnder(chainA);
+        assertNotEq(dA, address(0), "Deploy on chainA failed");
 
         // Roll back state so we can deploy "fresh" again
         vm.revertToState(snap);
 
-        // Deploy under CHAIN_B
-        address dB = _deployUnder(CHAIN_B);
-        assertNotEq(dB, address(0), "Deploy on CHAIN_B failed");
+        // Deploy under chainB
+        address dB = _deployUnder(chainB);
+        assertNotEq(dB, address(0), "Deploy on chainB failed");
 
         // If chain ID is not included in your salt/derivation, these must match
         assertEq(dA, dB, "Deployed make address should match across chain IDs");
