@@ -1,0 +1,14 @@
+{
+  "env": "test",
+  "id": "endpoint",
+  "keyValues": [
+    {
+      "key": 97,
+      "value": "0x6EDCE65403992e310A62460808c4b910D972f10f"
+    },
+    {
+      "key": 11155111,
+      "value": "0x6EDCE65403992e310A62460808c4b910D972f10f"
+    }
+  ]
+}
