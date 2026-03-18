@@ -1,0 +1,14 @@
+{
+  "env": "testnet",
+  "id": "eid",
+  "keyValues": [
+    {
+      "key": 97,
+      "value": 40102
+    },
+    {
+      "key": 11155111,
+      "value": 40161
+    }
+  ]
+}
