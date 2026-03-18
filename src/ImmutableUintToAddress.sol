@@ -28,27 +28,6 @@ contract ImmutableUintToAddress is IUintToAddress, IUintToAddressMaker {
         return _values[key];
     }
 
-    // @inheritdoc IUintToAddress
-    function keys() external view returns (uint256[] memory) {
-        return _keys;
-    }
-
-    // @inheritdoc IUintToAddress
-    function values() external view returns (address[] memory vals) {
-        vals = new address[](_keys.length);
-        for (uint256 i; i < _keys.length; ++i) {
-            vals[i] = _values[_keys[i]];
-        }
-    }
-
-    // @inheritdoc IUintToAddress
-    function keyValues() external view returns (KeyValue[] memory kvs) {
-        kvs = new KeyValue[](_keys.length);
-        for (uint256 i; i < _keys.length; ++i) {
-            kvs[i] = KeyValue({key: _keys[i], value: _values[_keys[i]]});
-        }
-    }
-
     /// @inheritdoc IUintToAddressMaker
     function made(KeyValue[] memory kvs) public view returns (bool exists, address expected, bytes32 salt) {
         salt = keccak256(abi.encode(kvs));

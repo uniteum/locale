@@ -28,27 +28,6 @@ contract ImmutableUintToUint is IUintToUint, IUintToUintMaker {
         return _values[key];
     }
 
-    // @inheritdoc IUintToUint
-    function keys() external view returns (uint256[] memory) {
-        return _keys;
-    }
-
-    // @inheritdoc IUintToUint
-    function values2() external view returns (uint256[] memory vals) {
-        vals = new uint256[](_keys.length);
-        for (uint256 i; i < _keys.length; ++i) {
-            vals[i] = _values[_keys[i]];
-        }
-    }
-
-    // @inheritdoc IUintToUint
-    function keyValues2() external view returns (KeyValue[] memory kvs) {
-        kvs = new KeyValue[](_keys.length);
-        for (uint256 i; i < _keys.length; ++i) {
-            kvs[i] = KeyValue({key: _keys[i], value: _values[_keys[i]]});
-        }
-    }
-
     /// @inheritdoc IUintToUintMaker
     function made(KeyValue[] memory kvs) public view returns (bool exists, address expected, bytes32 salt) {
         salt = keccak256(abi.encode(kvs));
