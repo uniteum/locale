@@ -3,10 +3,12 @@ pragma solidity ^0.8.30;
 
 import {Script, console2} from "forge-std/Script.sol";
 
-/// @notice Base script for deploying protofactory contracts via CREATE2 with salt 0x0.
+/// @notice Base script for deploying protofactory contracts via Nick's CREATE2 deployer with salt 0x0.
 /// @dev Subclasses provide the contract name and creation code.
 ///      The predicted address is written to io/$env/$chain/$name.json.
 abstract contract ProtoScript is Script {
+    address constant NICK = 0x4e59b44847b379578588920cA78FbF26c0B4956C;
+
     function name() internal pure virtual returns (string memory);
     function creationCode() internal pure virtual returns (bytes memory);
 
@@ -19,13 +21,10 @@ abstract contract ProtoScript is Script {
         console2.log("predicted:", predicted);
         if (predicted.code.length == 0) {
             vm.startBroadcast();
-            address actual;
-            assembly {
-                actual := create2(0, add(code, 0x20), mload(code), 0x0)
-            }
+            (bool ok, ) = NICK.call(abi.encodePacked(bytes32(0), code));
             vm.stopBroadcast();
-            require(actual != address(0), "create2 failed");
-            console2.log("actual   :", actual);
+            require(ok, "create2 failed");
+            console2.log("actual   :", predicted);
         } else {
             console2.log("already deployed");
         }
