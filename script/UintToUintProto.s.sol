@@ -6,7 +6,7 @@ import {Script, console2} from "forge-std/Script.sol";
 import {ImmutableUintToUint} from "../src/ImmutableUintToUint.sol";
 
 /// @notice Deploy the ImmutableUintToUint protofactory contract.
-/// @dev Usage: proto=io/$chain/UintToUintProto.json forge script script/UintToUintProto.s.sol -f $chain --private-key $tx_key --broadcast --verify --delay 10 --retries 10
+/// @dev Usage: proto=UintToUintProto.json forge script script/UintToUintProto.s.sol -f $chain --private-key $tx_key --broadcast --verify --delay 10 --retries 10
 contract UintToUintProto is Script {
     function run() external {
         console2.log("script   : UintToUintProto");
@@ -21,6 +21,9 @@ contract UintToUintProto is Script {
             console2.log("already deployed");
         }
 
-        vm.writeJson(vm.toString(predicted), vm.envString("proto"));
+        string memory dir = string.concat("io/", vm.envString("chain"));
+        string memory path = string.concat(dir, "/", vm.envString("proto"));
+        vm.createDir(dir, true);
+        vm.writeJson(vm.toString(predicted), path);
     }
 }

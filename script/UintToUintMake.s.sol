@@ -10,8 +10,7 @@ import {IUintToUintMaker} from "ilookup/IUintToUintMaker.sol";
 ///   - proto  : address of the IUintToUintMaker contract
 ///   - config : path to JSON config file with { env, id, keyValues }
 ///   - clone  : path to JSON file that will contain the deployed address
-/// @dev Example:
-/// proto=io/$chain/UintToUintProto.json config=io/testnet/endpointMapper.json clone=io/$chain/messaging.json forge script script/UintToUintMake.s.sol -f $chain --private-key $tx_key --broadcast
+/// @dev Usage: proto=UintToUintProto.json config=io/testnet/endpointMapper.json clone=messaging.json forge script script/UintToUintMake.s.sol -f $chain --private-key $tx_key --broadcast
 contract UintToUintMake is Script {
     struct Config {
         string env;
@@ -21,8 +20,10 @@ contract UintToUintMake is Script {
 
     function run() external {
         console2.log("script   : UintToUintMake");
+        string memory dir = string.concat("io/", vm.envString("chain"));
+
         // forge-lint: disable-next-line(unsafe-cheatcode)
-        address proto = abi.decode(vm.parseJson(vm.readFile(vm.envString("proto"))), (address));
+        address proto = abi.decode(vm.parseJson(vm.readFile(string.concat(dir, "/", vm.envString("proto")))), (address));
         console2.log("proto    :", proto);
 
         // forge-lint: disable-next-line(unsafe-cheatcode)
@@ -46,6 +47,8 @@ contract UintToUintMake is Script {
 
         // Result logs
 
-        vm.writeJson(vm.serializeAddress("tmp", config.id, clone), vm.envString("clone"));
+        string memory path = string.concat(dir, "/", vm.envString("clone"));
+        vm.createDir(dir, true);
+        vm.writeJson(vm.serializeAddress("tmp", config.id, clone), path);
     }
 }

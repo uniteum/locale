@@ -6,7 +6,7 @@ import {Script, console2} from "forge-std/Script.sol";
 import {AddressLookup} from "../src/AddressLookup.sol";
 
 /// @notice Deploy the AddressLookup factory/implementation contract.
-/// @dev Usage: proto=io/$chain/AddressLookupProto.json forge script script/AddressLookupProto.s.sol -f $chain --private-key $tx_key --broadcast --verify --delay 10 --retries 10
+/// @dev Usage: proto=AddressLookupProto.json forge script script/AddressLookupProto.s.sol -f $chain --private-key $tx_key --broadcast --verify --delay 10 --retries 10
 contract AddressLookupProto is Script {
     function run() external {
         console2.log("script   : AddressLookupProto");
@@ -21,7 +21,9 @@ contract AddressLookupProto is Script {
             console2.log("already deployed");
         }
 
-        string memory jsonPath = vm.envString("proto");
-        vm.writeJson(vm.toString(predicted), jsonPath);
+        string memory dir = string.concat("io/", vm.envString("chain"));
+        string memory path = string.concat(dir, "/", vm.envString("proto"));
+        vm.createDir(dir, true);
+        vm.writeJson(vm.toString(predicted), path);
     }
 }

@@ -9,8 +9,7 @@ import {AddressLookup, IUintToAddressMaker} from "../src/AddressLookup.sol";
 /// @dev Environment variables (required):
 ///   - proto : address of the AddressLookup (IUintToAddressMaker) contract
 ///   - config  : path to JSON config file with { env, id, keyValues }
-/// @dev Example:
-///   proto=io/$chain/AddressLookupProto.json config=io/testnet/blocker.json clone=io/$chain/messaging/blocker.json forge script script/AddressLookupMake.s.sol -f $chain --private-key $tx_key --broadcast
+/// @dev Usage: proto=AddressLookupProto.json config=io/testnet/blocker.json clone=blocker.json forge script script/AddressLookupMake.s.sol -f $chain --private-key $tx_key --broadcast
 contract AddressLookupMake is Script {
     struct Config {
         string env;
@@ -21,8 +20,10 @@ contract AddressLookupMake is Script {
     function run() external {
         console2.log("script   : AddressLookupMake");
 
+        string memory dir = string.concat("io/", vm.envString("chain"));
+
         // forge-lint: disable-next-line(unsafe-cheatcode)
-        address proto = abi.decode(vm.parseJson(vm.readFile(vm.envString("proto"))), (address));
+        address proto = abi.decode(vm.parseJson(vm.readFile(string.concat(dir, "/", vm.envString("proto")))), (address));
         console2.log("proto    :", proto);
 
         // forge-lint: disable-next-line(unsafe-cheatcode)
@@ -44,6 +45,8 @@ contract AddressLookupMake is Script {
 
         console2.log("actual   :", actual);
 
-        vm.writeJson(vm.serializeAddress("tmp", config.id, actual), vm.envString("clone"));
+        string memory path = string.concat(dir, "/", vm.envString("clone"));
+        vm.createDir(dir, true);
+        vm.writeJson(vm.serializeAddress("tmp", config.id, actual), path);
     }
 }

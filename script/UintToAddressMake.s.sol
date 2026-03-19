@@ -10,8 +10,7 @@ import {IUintToAddressMaker} from "ilookup/IUintToAddressMaker.sol";
 ///   - proto  : address of the IUintToAddressMaker contract
 ///   - config : path to JSON config file with { env, id, keyValues }
 ///   - clone  : path to JSON file that will contain the deployed address
-/// @dev Example:
-/// proto=io/$chain/UintToAddressProto.json config=io/testnet/dvn/google-cloud.json clone=io/$chain/dvn/google-cloud.json forge script script/UintToAddressMake.s.sol -f $chain --private-key $tx_key --broadcast
+/// @dev Usage: proto=UintToAddressProto.json config=io/testnet/dvn/google-cloud.json clone=google-cloud.json forge script script/UintToAddressMake.s.sol -f $chain --private-key $tx_key --broadcast
 contract UintToAddressMake is Script {
     struct Config {
         string env;
@@ -21,8 +20,10 @@ contract UintToAddressMake is Script {
 
     function run() external {
         console2.log("== UintToAddressMake ==");
+        string memory dir = string.concat("io/", vm.envString("chain"));
+
         // forge-lint: disable-next-line(unsafe-cheatcode)
-        address proto = abi.decode(vm.parseJson(vm.readFile(vm.envString("proto"))), (address));
+        address proto = abi.decode(vm.parseJson(vm.readFile(string.concat(dir, "/", vm.envString("proto")))), (address));
         console2.log("proto     :", proto);
 
         // forge-lint: disable-next-line(unsafe-cheatcode)
@@ -47,6 +48,8 @@ contract UintToAddressMake is Script {
         console2.log("action    :", action);
         console2.log("clone     :", clone);
 
-        vm.writeJson(vm.toString(clone), vm.envString("clone"), string.concat(".", config.id));
+        string memory path = string.concat(dir, "/", vm.envString("clone"));
+        vm.createDir(dir, true);
+        vm.writeJson(vm.toString(clone), path, string.concat(".", config.id));
     }
 }
