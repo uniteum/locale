@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.30;
 
 import {Script, console2} from "forge-std/Script.sol";
 
 /// @notice Base script for deploying protofactory contracts via CREATE2 with salt 0x0.
 /// @dev Subclasses provide the contract name and creation code.
-///      The predicted address is written to io/$chain/$name.json.
+///      The predicted address is written to io/$env/$chain/$name.json.
 abstract contract ProtoScript is Script {
     function name() internal pure virtual returns (string memory);
     function creationCode() internal pure virtual returns (bytes memory);
@@ -30,7 +30,7 @@ abstract contract ProtoScript is Script {
             console2.log("already deployed");
         }
 
-        string memory dir = string.concat("io/", vm.envString("chain"));
+        string memory dir = string.concat("io/", vm.envString("env"), "/", vm.envString("chain"));
         string memory path = string.concat(dir, "/", n, ".json");
         vm.createDir(dir, true);
         vm.writeJson(vm.toString(predicted), path);

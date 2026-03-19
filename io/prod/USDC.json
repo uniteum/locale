@@ -1,6 +1,6 @@
 {
-  "env": "mainnet",
-  "id": "endpoint",
+  "env": "prod",
+  "id": "USDC",
   "keyValues": [
     {
       "key": 42161,
