@@ -1,0 +1,1 @@
+../../config/.claude/rules/solidity.md
