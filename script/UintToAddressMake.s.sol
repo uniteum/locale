@@ -21,9 +21,11 @@ contract UintToAddressMake is Script {
 
     function run() external {
         console2.log("== UintToAddressMake ==");
+        // forge-lint: disable-next-line(unsafe-cheatcode)
         address proto = abi.decode(vm.parseJson(vm.readFile(vm.envString("proto"))), (address));
         console2.log("proto     :", proto);
 
+        // forge-lint: disable-next-line(unsafe-cheatcode)
         Config memory config = abi.decode(vm.parseJson(vm.readFile(vm.envString("config"))), (Config));
         console2.log("id        :", config.id);
         console2.log("env       :", config.env);
