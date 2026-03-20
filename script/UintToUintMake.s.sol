@@ -7,10 +7,12 @@ import {IUintToUintMaker} from "ilookup/IUintToUintMaker.sol";
 
 /// @notice Deploy an ImmutableUintToUint clone ONLY if it doesn't already exist (idempotent).
 /// @dev Environment variables (required):
+///   - env    : deployment environment ("prod" or "test")
+///   - chain  : numerical chain ID (e.g. "42161")
 ///   - proto  : address of the IUintToUintMaker contract
 ///   - config : path to JSON config file with { env, id, keyValues }
 ///   - clone  : path to JSON file that will contain the deployed address
-/// @dev Usage: proto=UintToUintProto.json config=io/testnet/endpointMapper.json clone=messaging.json forge script script/UintToUintMake.s.sol -f $chain --private-key $tx_key --broadcast
+/// @dev Usage: env=test chain=11155111 proto=UintToUintProto.json config=io/test/endpointMapper.json clone=messaging.json forge script script/UintToUintMake.s.sol -f $chain --private-key $tx_key --broadcast
 contract UintToUintMake is Script {
     struct Config {
         string env;
@@ -20,7 +22,7 @@ contract UintToUintMake is Script {
 
     function run() external {
         console2.log("script   : UintToUintMake");
-        string memory dir = string.concat("io/", vm.envString("chain"));
+        string memory dir = string.concat("io/", vm.envString("env"), "/", vm.envString("chain"));
 
         // forge-lint: disable-next-line(unsafe-cheatcode)
         address proto = abi.decode(vm.parseJson(vm.readFile(string.concat(dir, "/", vm.envString("proto")))), (address));
