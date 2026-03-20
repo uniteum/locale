@@ -1,6 +1,3 @@
-[submodule "config"]
-	path = config
-	url = git@github.com:uniteum/config.git
 [submodule "lib/ilookup"]
 	path = lib/ilookup
 	url = git@github.com:uniteum/ilookup.git
@@ -10,3 +7,6 @@
 [submodule "lib/forge-std"]
 	path = lib/forge-std
 	url = https://github.com/foundry-rs/forge-std.git
+[submodule "config"]
+	path = config
+	url = git@github.com:uniteum/solidity.git
