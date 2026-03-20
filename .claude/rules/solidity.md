@@ -1,1 +1,1 @@
-../../config/.claude/rules/solidity.md
+../../solidity/.claude/rules/solidity.md
