@@ -8,5 +8,5 @@
 	path = lib/forge-std
 	url = https://github.com/foundry-rs/forge-std.git
 [submodule "solidity"]
-	path = solidity
+	path = lib/solidity
 	url = git@github.com:uniteum/solidity.git
