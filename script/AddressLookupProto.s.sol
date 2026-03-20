@@ -2,7 +2,7 @@
 pragma solidity ^0.8.30;
 
 import {AddressLookup} from "../src/AddressLookup.sol";
-import {ProtoScript} from "./ProtoScript.s.sol";
+import {ProtoScript} from "solidity/script/Proto.s.sol";
 
 /// @notice Deploy the AddressLookup protofactory contract.
 /// @dev Usage: forge script script/AddressLookupProto.s.sol -f $chain --private-key $tx_key --broadcast --verify --delay 10 --retries 10

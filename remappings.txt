@@ -1,3 +1,4 @@
 forge-std/=lib/forge-std/src/
+solidity/=solidity/
 ilookup/=lib/ilookup/
 clones/=lib/clones/
