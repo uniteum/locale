@@ -1,1 +1,1 @@
-../../lib/solidity/.claude/rules/solidity.md
+../../lib/crucible/.claude/rules/solidity.md

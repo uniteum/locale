@@ -2,7 +2,7 @@
 pragma solidity ^0.8.30;
 
 import {ImmutableUintToUint} from "../src/ImmutableUintToUint.sol";
-import {ProtoScript} from "solidity/script/Proto.s.sol";
+import {ProtoScript} from "crucible/script/Proto.s.sol";
 
 /// @notice Deploy the ImmutableUintToUint protofactory contract.
 /// @dev Usage: forge script script/UintToUintProto.s.sol -f $chain --private-key $tx_key --broadcast --verify --delay 10 --retries 10
