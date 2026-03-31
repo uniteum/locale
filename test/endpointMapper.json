@@ -1,5 +1,5 @@
 {
-  "env": "testnet",
+  "env": "test",
   "id": "eid",
   "keyValues": [
     {

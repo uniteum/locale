@@ -1,0 +1,90 @@
+{
+  "env": "prod",
+  "id": "USDC",
+  "keyValues": [
+    {
+      "key": 42161,
+      "value": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831"
+    },
+    {
+      "key": 43114,
+      "value": "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E"
+    },
+    {
+      "key": 8453,
+      "value": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+    },
+    {
+      "key": 81224,
+      "value": "0xd996633a415985DBd7D6D12f4A4343E31f5037cf"
+    },
+    {
+      "key": 42220,
+      "value": "0xcebA9300f2b948710d2653dD7B07f33A8B32118C"
+    },
+    {
+      "key": 3343,
+      "value": "0x98d2919b9A214E6Fa5384AC81E6864bA686Ad74c"
+    },
+    {
+      "key": 1,
+      "value": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+    },
+    {
+      "key": 999,
+      "value": "0xb88339CB7199b77E23DB6E890353E22632Ba630f"
+    },
+    {
+      "key": 57073,
+      "value": "0x2D270e6886d130D724215A266106e6832161EAEd"
+    },
+    {
+      "key": 59141,
+      "value": "0x176211869cA2b568f2A7D4EE941E073a821EE1ff"
+    },
+    {
+      "key": 143,
+      "value": "0x754704Bc059F8C67012fEd69BC8A327a5aafb603"
+    },
+    {
+      "key": 2818,
+      "value": "0xCfb1186F4e93D60E60a8bDd997427D1F33bc372B"
+    },
+    {
+      "key": 10,
+      "value": "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"
+    },
+    {
+      "key": 98866,
+      "value": "0x222365EF19F7947e5484218551B56bb3965Aa7aF"
+    },
+    {
+      "key": 137,
+      "value": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359"
+    },
+    {
+      "key": 1329,
+      "value": "0xe15fC38F6D8c56aF07bbCBe3BAf5708A2Bf42392"
+    },
+    {
+      "key": 146,
+      "value": "0x29219dd400f2Bf60E5a23d13Be72B486D4038894"
+    },
+    {
+      "key": 130,
+      "value": "0x078D782b760474a361dDA0AF3839290b0EF57AD6"
+    },
+    {
+      "key": 480,
+      "value": "0x79A02482A880bCe3F13E09da970dC34dB4cD24D1"
+    },
+    {
+      "key": 50,
+      "value": "0xfA2958CB79b0491CC627c1557F441eF849Ca8eb1"
+    },
+    {
+      "key": 324,
+      "value": "0x1d17CBcF0D6D143135aE902365D2E5e2A16538D4"
+    }
+  ]
+}
