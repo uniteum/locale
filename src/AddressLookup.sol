@@ -14,6 +14,8 @@ import {Clones} from "clones/Clones.sol";
 /// bridges, and explorers that require a single uniform reference across chains.
 /// @dev The implementation is also a factory, allowing anyone to easily deploy an AddressLookups.
 contract AddressLookup is IAddressLookup, IUintToAddressMaker {
+    string public constant VERSION = "1.0.0";
+
     address public immutable PROTO = address(this);
 
     /// @inheritdoc IAddressLookup
