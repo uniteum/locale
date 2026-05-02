@@ -14,9 +14,9 @@ import {Clones} from "clones/Clones.sol";
 /// bridges, and explorers that require a single uniform reference across chains.
 /// @dev The implementation is also a factory, allowing anyone to easily deploy an AddressLookups.
 contract AddressLookup is IAddressLookup, IUintToAddressMaker {
-    string public constant VERSION = "1.0.0";
+    string public constant version = "1.0.1";
 
-    address public immutable PROTO = address(this);
+    address public immutable proto = address(this);
 
     /// @inheritdoc IAddressLookup
     address public value;
@@ -24,7 +24,7 @@ contract AddressLookup is IAddressLookup, IUintToAddressMaker {
     /// @inheritdoc IUintToAddressMaker
     function made(KeyValue[] memory keyValues) public view returns (bool exists, address home, bytes32 salt) {
         salt = keccak256(abi.encode(keyValues));
-        home = Clones.predictDeterministicAddress(PROTO, salt, PROTO);
+        home = Clones.predictDeterministicAddress(proto, salt, proto);
         exists = home.code.length > 0;
     }
 
@@ -47,10 +47,10 @@ contract AddressLookup is IAddressLookup, IUintToAddressMaker {
         }
     }
 
-    /// @dev Only PROTO should call zzInit.
+    /// @dev Only proto should call zzInit.
     /// @param value_ The value address for the current chain.
     function zzInit(address value_) public {
-        if (msg.sender != PROTO) revert Unauthorized();
+        if (msg.sender != proto) revert Unauthorized();
         value = value_;
     }
 }

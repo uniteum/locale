@@ -9,7 +9,7 @@ import {Clones} from "clones/Clones.sol";
 /// The implementation is also a factory, allowing anyone to easily deploy an instance.
 /// Deterministic deployment ensures identical addresses across chains.
 contract ImmutableUintToAddress is IUintToAddress, IUintToAddressMaker {
-    address public immutable PROTO = address(this);
+    address public immutable proto = address(this);
 
     /// @inheritdoc IUintToAddress
     uint256[] public keyAt;
@@ -25,7 +25,7 @@ contract ImmutableUintToAddress is IUintToAddress, IUintToAddressMaker {
     /// @inheritdoc IUintToAddressMaker
     function made(KeyValue[] memory kvs) public view returns (bool exists, address expected, bytes32 salt) {
         salt = keccak256(abi.encode(kvs));
-        expected = Clones.predictDeterministicAddress(PROTO, salt, PROTO);
+        expected = Clones.predictDeterministicAddress(proto, salt, proto);
         exists = expected.code.length > 0;
     }
 
@@ -35,16 +35,16 @@ contract ImmutableUintToAddress is IUintToAddress, IUintToAddressMaker {
         bytes32 salt;
         (exists, home, salt) = made(kvs);
         if (!exists) {
-            Clones.cloneDeterministic(PROTO, salt, 0);
+            Clones.cloneDeterministic(proto, salt, 0);
             ImmutableUintToAddress(home).zzInit(kvs);
             emit Made(home, salt);
         }
     }
 
-    /// @dev Only PROTO should call zzInit.
+    /// @dev Only proto should call zzInit.
     /// @param kvs The array of key value pairs sorted by key.
     function zzInit(KeyValue[] memory kvs) public {
-        if (msg.sender != PROTO) revert Unauthorized();
+        if (msg.sender != proto) revert Unauthorized();
         for (uint256 i; i < kvs.length; ++i) {
             keyAt.push(kvs[i].key);
             valueOf[kvs[i].key] = kvs[i].value;
