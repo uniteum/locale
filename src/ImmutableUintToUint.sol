@@ -23,17 +23,21 @@ contract ImmutableUintToUint is IUintToUint, IUintToUintMaker {
     }
 
     /// @inheritdoc IUintToUintMaker
-    function made(KeyValue[] memory kvs) public view returns (bool exists, address expected, bytes32 salt) {
-        salt = keccak256(abi.encode(kvs));
+    function made(KeyValue[] memory kvs, uint256 variant)
+        public
+        view
+        returns (bool exists, address expected, bytes32 salt)
+    {
+        salt = keccak256(abi.encode(kvs, variant));
         expected = Clones.predictDeterministicAddress(proto, salt, proto);
         exists = expected.code.length > 0;
     }
 
     /// @inheritdoc IUintToUintMaker
-    function make(KeyValue[] memory kvs) public returns (address home) {
+    function make(KeyValue[] memory kvs, uint256 variant) public returns (address home) {
         bool exists;
         bytes32 salt;
-        (exists, home, salt) = made(kvs);
+        (exists, home, salt) = made(kvs, variant);
         if (!exists) {
             Clones.cloneDeterministic(proto, salt, 0);
             ImmutableUintToUint(home).zzInit(kvs);
