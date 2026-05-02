@@ -1,5 +1,5 @@
 source .env
-salt=0x0000000000000000000000000000000000000000000000000000000000db3518
+salt=0x00000000000000000000000000000000000000000000000000000000020427c0
 initcode=$(forge inspect AddressLookup bytecode)
 initcodehash=$(cast keccak $initcode)
 echo "initcodehash=$initcodehash"
