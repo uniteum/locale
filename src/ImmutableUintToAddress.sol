@@ -5,26 +5,36 @@ import {IUintToAddress} from "ilookup/IUintToAddress.sol";
 import {IUintToAddressMaker} from "ilookup/IUintToAddressMaker.sol";
 import {Clones} from "clones/Clones.sol";
 
-/// @notice Immutable map from uint256 to address with no governance or upgrade risk.
-/// The implementation is also a factory, allowing anyone to easily deploy an instance.
-/// Deterministic deployment ensures identical addresses across chains.
+/**
+ * @notice Immutable map from uint256 to address with no governance or upgrade risk.
+ * The implementation is also a factory, allowing anyone to easily deploy an instance.
+ * Deterministic deployment ensures identical addresses across chains.
+ */
 contract ImmutableUintToAddress is IUintToAddress, IUintToAddressMaker {
     string public constant version = "2.0.0";
 
     address public immutable proto = address(this);
 
-    /// @inheritdoc IUintToAddress
+    /**
+     * @inheritdoc IUintToAddress
+     */
     uint256[] public keyAt;
 
-    /// @inheritdoc IUintToAddress
+    /**
+     * @inheritdoc IUintToAddress
+     */
     mapping(uint256 => address) public valueOf;
 
-    /// @inheritdoc IUintToAddress
+    /**
+     * @inheritdoc IUintToAddress
+     */
     function length() external view returns (uint256) {
         return keyAt.length;
     }
 
-    /// @inheritdoc IUintToAddressMaker
+    /**
+     * @inheritdoc IUintToAddressMaker
+     */
     function made(KeyValue[] memory kvs, uint256 variant)
         public
         view
@@ -35,7 +45,9 @@ contract ImmutableUintToAddress is IUintToAddress, IUintToAddressMaker {
         exists = expected.code.length > 0;
     }
 
-    /// @inheritdoc IUintToAddressMaker
+    /**
+     * @inheritdoc IUintToAddressMaker
+     */
     function make(KeyValue[] memory kvs, uint256 variant) public returns (address home) {
         bool exists;
         bytes32 salt;
@@ -47,8 +59,10 @@ contract ImmutableUintToAddress is IUintToAddress, IUintToAddressMaker {
         }
     }
 
-    /// @dev Only proto should call zzInit.
-    /// @param kvs The array of key value pairs sorted by key.
+    /**
+     * @dev Only proto should call zzInit.
+     * @param kvs The array of key value pairs sorted by key.
+     */
     function zzInit(KeyValue[] memory kvs) public {
         if (msg.sender != proto) revert Unauthorized();
         for (uint256 i; i < kvs.length; ++i) {
