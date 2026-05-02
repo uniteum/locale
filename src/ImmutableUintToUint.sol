@@ -9,6 +9,8 @@ import {Clones} from "clones/Clones.sol";
 /// The implementation is also a factory, allowing anyone to easily deploy an instance.
 /// Deterministic deployment ensures identical addresses across chains.
 contract ImmutableUintToUint is IUintToUint, IUintToUintMaker {
+    string public constant version = "2.0.0";
+
     address public immutable proto = address(this);
 
     /// @inheritdoc IUintToUint
