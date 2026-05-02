@@ -38,14 +38,14 @@ contract AddressLookupMake is Script {
         console2.log("env      :", config.env);
         console2.log("length   :", config.keyValues.length);
 
-        (, address predicted,) = IUintToAddressMaker(proto).made(config.keyValues);
+        (, address predicted,) = IUintToAddressMaker(proto).made(config.keyValues, 0);
         console2.log("predicted:", predicted);
 
         string memory action = "reused";
         address actual = predicted;
         if (actual.code.length == 0) {
             vm.startBroadcast();
-            actual = IUintToAddressMaker(proto).make(config.keyValues);
+            actual = IUintToAddressMaker(proto).make(config.keyValues, 0);
             vm.stopBroadcast();
             action = "deployed";
         }

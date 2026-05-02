@@ -33,7 +33,7 @@ contract UintToAddressMake is Script {
         console2.log("id        :", config.id);
         console2.log("env       :", config.env);
 
-        (, address predicted,) = IUintToAddressMaker(proto).made(config.keyValues);
+        (, address predicted,) = IUintToAddressMaker(proto).made(config.keyValues, 0);
         console2.log("predicted :", predicted);
 
         // Idempotent deploy (only broadcast if bytecode missing)
@@ -41,7 +41,7 @@ contract UintToAddressMake is Script {
         address clone = predicted;
         if (clone.code.length == 0) {
             vm.startBroadcast();
-            clone = IUintToAddressMaker(proto).make(config.keyValues);
+            clone = IUintToAddressMaker(proto).make(config.keyValues, 0);
             vm.stopBroadcast();
             action = "deployed";
         }

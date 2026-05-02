@@ -27,16 +27,16 @@ contract AddressLookupTest is Test {
 
     // Test make()
     function test_AddressLookupMake() public {
-        address address1 = proto.make(config.keyValues);
+        address address1 = proto.make(config.keyValues, 0);
         assertNotEq(address1, address(0), "address1 is unexpectedly zero.");
     }
 
     // Test redundant make()
     function test_AddressLookupMake2() public {
-        address address1 = proto.make(config.keyValues);
+        address address1 = proto.make(config.keyValues, 0);
         assertNotEq(address1, address(0), "address1 is unexpectedly zero.");
 
-        address address2 = proto.make(config.keyValues);
+        address address2 = proto.make(config.keyValues, 0);
         assertNotEq(address2, address(0), "address2 is unexpectedly zero.");
 
         assertEq(address1, address2, "Second make should return address1.");
@@ -44,8 +44,8 @@ contract AddressLookupTest is Test {
 
     // Test that make() clones to the address that made() predicts
     function test_AddressLookupMakeAddress() public {
-        (, address address1,) = proto.made(config.keyValues);
-        address address2 = proto.make(config.keyValues);
+        (, address address1,) = proto.made(config.keyValues, 0);
+        address address2 = proto.make(config.keyValues, 0);
         assertEq(address1, address2, "made() and make() disagree on deployed address.");
     }
 
@@ -53,8 +53,8 @@ contract AddressLookupTest is Test {
     function test_AddressLookupMakeDifferentKVsGivesDifferentAddress() public {
         AddressLookup.KeyValue[] memory altered = config.keyValues;
         altered[0].value = address(42);
-        address address1 = proto.make(config.keyValues);
-        address address2 = proto.make(altered);
+        address address1 = proto.make(config.keyValues, 0);
+        address address2 = proto.make(altered, 0);
         assertNotEq(address1, address(0), "make of KVs failed.");
         assertNotEq(address2, address(0), "make of modified KVs failed.");
         assertNotEq(address1, address2, "Distinct KVs should yield different make addresses");
@@ -63,10 +63,10 @@ contract AddressLookupTest is Test {
     // Test that empty KVs is acceptable (This should probably be reversed but it's currently allowed)
     function test_AddressLookupEmptyConfigIsDeterministic() public {
         AddressLookup.KeyValue[] memory empty;
-        (, address address1, bytes32 salt1) = proto.made(empty);
+        (, address address1, bytes32 salt1) = proto.made(empty, 0);
         assertNotEq(address1, address(0), "made() on empty KVs failed.");
         assertNotEq(salt1, 0, "salt1 unexpectedly zero.");
-        address address2 = proto.make(empty);
+        address address2 = proto.make(empty, 0);
         assertNotEq(address2, address(0), "make() on empty KVs failed.");
         assertEq(address1, address2, "made() and make() should return the same address.");
     }
@@ -75,7 +75,7 @@ contract AddressLookupTest is Test {
     function _predictUnder(uint256 newChainId) internal returns (address predicted, bytes32 salt) {
         uint256 prev = block.chainid;
         vm.chainId(newChainId);
-        (, predicted, salt) = proto.made(config.keyValues);
+        (, predicted, salt) = proto.made(config.keyValues, 0);
         vm.chainId(prev);
     }
 
@@ -83,7 +83,7 @@ contract AddressLookupTest is Test {
     function _deployUnder(uint256 newChainId) internal returns (address deployed) {
         uint256 prev = block.chainid;
         vm.chainId(newChainId);
-        deployed = proto.make(config.keyValues);
+        deployed = proto.make(config.keyValues, 0);
         vm.chainId(prev);
     }
 

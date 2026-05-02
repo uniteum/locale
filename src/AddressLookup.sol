@@ -28,8 +28,12 @@ contract AddressLookup is IAddressLookup, IUintToAddressMaker {
     /**
      * @inheritdoc IUintToAddressMaker
      */
-    function made(KeyValue[] memory keyValues) public view returns (bool exists, address home, bytes32 salt) {
-        salt = keccak256(abi.encode(keyValues));
+    function made(KeyValue[] memory keyValues, uint256 variant)
+        public
+        view
+        returns (bool exists, address home, bytes32 salt)
+    {
+        salt = keccak256(abi.encode(keyValues, variant));
         home = Clones.predictDeterministicAddress(proto, salt, proto);
         exists = home.code.length > 0;
     }
@@ -37,10 +41,10 @@ contract AddressLookup is IAddressLookup, IUintToAddressMaker {
     /**
      * @inheritdoc IUintToAddressMaker
      */
-    function make(KeyValue[] memory keyValues) public returns (address home) {
+    function make(KeyValue[] memory keyValues, uint256 variant) public returns (address home) {
         bool exists;
         bytes32 salt;
-        (exists, home, salt) = made(keyValues);
+        (exists, home, salt) = made(keyValues, variant);
         if (!exists) {
             address value_;
             for (uint256 i; i < keyValues.length; ++i) {
