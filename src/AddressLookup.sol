@@ -5,30 +5,38 @@ import {IAddressLookup} from "ilookup/IAddressLookup.sol";
 import {IUintToAddressMaker} from "ilookup/IUintToAddressMaker.sol";
 import {Clones} from "clones/Clones.sol";
 
-/// @notice Immutably map a single predictable contract address to a chain specific address.
-/// The same contract deployed to the same address on different chains can return
-/// different values based on the chain ID.
-/// @dev Deterministic deployment provides a trustless reference with no governance or upgrade risk.
-/// Contracts, SDKs, and UIs can hardcode one address and resolve everywhere.
-/// Typical uses include cross-chain endpoints (oracles, messengers, executors), wallets,
-/// bridges, and explorers that require a single uniform reference across chains.
-/// @dev The implementation is also a factory, allowing anyone to easily deploy an AddressLookups.
+/**
+ * @notice Immutably map a single predictable contract address to a chain specific address.
+ * The same contract deployed to the same address on different chains can return
+ * different values based on the chain ID.
+ * @dev Deterministic deployment provides a trustless reference with no governance or upgrade risk.
+ * Contracts, SDKs, and UIs can hardcode one address and resolve everywhere.
+ * Typical uses include cross-chain endpoints (oracles, messengers, executors), wallets,
+ * bridges, and explorers that require a single uniform reference across chains.
+ * @dev The implementation is also a factory, allowing anyone to easily deploy an AddressLookups.
+ */
 contract AddressLookup is IAddressLookup, IUintToAddressMaker {
     string public constant version = "1.0.1";
 
     address public immutable proto = address(this);
 
-    /// @inheritdoc IAddressLookup
+    /**
+     * @inheritdoc IAddressLookup
+     */
     address public value;
 
-    /// @inheritdoc IUintToAddressMaker
+    /**
+     * @inheritdoc IUintToAddressMaker
+     */
     function made(KeyValue[] memory keyValues) public view returns (bool exists, address home, bytes32 salt) {
         salt = keccak256(abi.encode(keyValues));
         home = Clones.predictDeterministicAddress(proto, salt, proto);
         exists = home.code.length > 0;
     }
 
-    /// @inheritdoc IUintToAddressMaker
+    /**
+     * @inheritdoc IUintToAddressMaker
+     */
     function make(KeyValue[] memory keyValues) public returns (address home) {
         bool exists;
         bytes32 salt;
@@ -47,8 +55,10 @@ contract AddressLookup is IAddressLookup, IUintToAddressMaker {
         }
     }
 
-    /// @dev Only proto should call zzInit.
-    /// @param value_ The value address for the current chain.
+    /**
+     * @dev Only proto should call zzInit.
+     * @param value_ The value address for the current chain.
+     */
     function zzInit(address value_) public {
         if (msg.sender != proto) revert Unauthorized();
         value = value_;
