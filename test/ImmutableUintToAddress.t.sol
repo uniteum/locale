@@ -71,6 +71,29 @@ contract ImmutableUintToAddressTest is Test {
         assertNotEq(address1, address2, "Distinct KVs should yield different make addresses");
     }
 
+    // Salt is keccak256(abi.encode(kvs)) XOR bytes32(variant), not abi.encode(kvs, variant).
+    function test_UintToAddressSaltIsXorOfVariant() public view {
+        uint256 variant = 7;
+        (,, bytes32 salt) = proto.made(config.keyValues, variant);
+
+        bytes32 xorSalt = keccak256(abi.encode(config.keyValues)) ^ bytes32(variant);
+        bytes32 absorbedSalt = keccak256(abi.encode(config.keyValues, variant));
+
+        assertEq(salt, xorSalt, "salt should be keccak(abi.encode(kvs)) XOR variant");
+        assertNotEq(salt, absorbedSalt, "salt should not absorb variant inside abi.encode");
+    }
+
+    // With variant=0 the XOR form leaves the kv-only hash unchanged; the absorbed form does not.
+    function test_UintToAddressSaltZeroVariantEqualsKvHash() public view {
+        (,, bytes32 salt) = proto.made(config.keyValues, 0);
+
+        bytes32 kvHash = keccak256(abi.encode(config.keyValues));
+        bytes32 absorbedSalt = keccak256(abi.encode(config.keyValues, uint256(0)));
+
+        assertEq(salt, kvHash, "salt with variant=0 should equal keccak(abi.encode(kvs))");
+        assertNotEq(salt, absorbedSalt, "salt should not equal abi.encode(kvs, 0) hash");
+    }
+
     // Test that empty KVs is acceptable (This should probably be reversed but it's currently allowed)
     function test_UintToAddressEmptyConfigIsDeterministic() public {
         // Need an empty set of KVs

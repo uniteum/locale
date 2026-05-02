@@ -13,7 +13,7 @@ import {Clones} from "clones/Clones.sol";
  * @dev The implementation is also a factory; anyone may deploy an AddressLookup.
  */
 contract AddressLookup is IAddressLookup, IUintToAddressMaker {
-    string public constant version = "2.0.0";
+    string public constant version = "2.1.0";
 
     address public immutable proto = address(this);
 
@@ -30,7 +30,7 @@ contract AddressLookup is IAddressLookup, IUintToAddressMaker {
         view
         returns (bool exists, address home, bytes32 salt)
     {
-        salt = keccak256(abi.encode(keyValues, variant));
+        salt = keccak256(abi.encode(keyValues)) ^ bytes32(variant);
         home = Clones.predictDeterministicAddress(proto, salt, proto);
         exists = home.code.length > 0;
     }

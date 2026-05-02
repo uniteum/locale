@@ -11,7 +11,7 @@ import {Clones} from "clones/Clones.sol";
  * The implementation is also a factory; anyone may deploy an instance.
  */
 contract ImmutableUintToUint is IUintToUint, IUintToUintMaker {
-    string public constant version = "2.0.0";
+    string public constant version = "2.1.0";
 
     address public immutable proto = address(this);
 
@@ -40,7 +40,7 @@ contract ImmutableUintToUint is IUintToUint, IUintToUintMaker {
         view
         returns (bool exists, address expected, bytes32 salt)
     {
-        salt = keccak256(abi.encode(kvs, variant));
+        salt = keccak256(abi.encode(kvs)) ^ bytes32(variant);
         expected = Clones.predictDeterministicAddress(proto, salt, proto);
         exists = expected.code.length > 0;
     }

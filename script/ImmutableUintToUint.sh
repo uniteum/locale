@@ -1,5 +1,5 @@
 source .env
-salt=0x0000000000000000000000000000000000000000000000000000000003c9ae57
+salt=0x000000000000000000000000000000000000000000000000000000008ff92ba1 
 initcode=$(forge inspect ImmutableUintToUint bytecode)
 initcodehash=$(cast keccak $initcode)
 echo "initcodehash=$initcodehash"
