@@ -6,17 +6,14 @@ import {IUintToAddressMaker} from "ilookup/IUintToAddressMaker.sol";
 import {Clones} from "clones/Clones.sol";
 
 /**
- * @notice Immutably map a single predictable contract address to a chain specific address.
- * The same contract deployed to the same address on different chains can return
- * different values based on the chain ID.
- * @dev Deterministic deployment provides a trustless reference with no governance or upgrade risk.
- * Contracts, SDKs, and UIs can hardcode one address and resolve everywhere.
- * Typical uses include cross-chain endpoints (oracles, messengers, executors), wallets,
- * bridges, and explorers that require a single uniform reference across chains.
- * @dev The implementation is also a factory, allowing anyone to easily deploy an AddressLookups.
+ * @notice Immutably map a single predictable address to a chain-specific address.
+ * @dev A trustless cross-chain reference with no governance or upgrade risk.
+ * Contracts, SDKs, and UIs can hardcode one address and resolve to the local
+ * value on any chain.
+ * @dev The implementation is also a factory; anyone may deploy an AddressLookup.
  */
 contract AddressLookup is IAddressLookup, IUintToAddressMaker {
-    string public constant version = "1.0.1";
+    string public constant version = "2.0.0";
 
     address public immutable proto = address(this);
 
@@ -60,7 +57,7 @@ contract AddressLookup is IAddressLookup, IUintToAddressMaker {
     }
 
     /**
-     * @dev Only proto should call zzInit.
+     * @dev Initializer; callable only by proto from {make}.
      * @param value_ The value address for the current chain.
      */
     function zzInit(address value_) public {

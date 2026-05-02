@@ -6,9 +6,9 @@ import {IUintToAddressMaker} from "ilookup/IUintToAddressMaker.sol";
 import {Clones} from "clones/Clones.sol";
 
 /**
- * @notice Immutable map from uint256 to address with no governance or upgrade risk.
- * The implementation is also a factory, allowing anyone to easily deploy an instance.
- * Deterministic deployment ensures identical addresses across chains.
+ * @notice Immutable map from uint256 to address, with no governance or upgrade risk.
+ * @dev Deterministic deployment yields identical addresses across chains.
+ * The implementation is also a factory; anyone may deploy an instance.
  */
 contract ImmutableUintToAddress is IUintToAddress, IUintToAddressMaker {
     string public constant version = "2.0.0";
@@ -60,7 +60,7 @@ contract ImmutableUintToAddress is IUintToAddress, IUintToAddressMaker {
     }
 
     /**
-     * @dev Only proto should call zzInit.
+     * @dev Initializer; callable only by proto from {make}.
      * @param kvs The array of key value pairs sorted by key.
      */
     function zzInit(KeyValue[] memory kvs) public {
