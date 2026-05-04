@@ -39,6 +39,7 @@ contract StringLookup is IStringLookup, IUintToStringMaker {
      * @inheritdoc IUintToStringMaker
      */
     function make(KeyValue[] memory keyValues, uint256 variant) public returns (address home) {
+        if (address(this) != proto) return StringLookup(proto).make(keyValues, variant);
         bool exists;
         bytes32 salt;
         (exists, home, salt) = made(keyValues, variant);
@@ -50,7 +51,7 @@ contract StringLookup is IStringLookup, IUintToStringMaker {
                     break;
                 }
             }
-            Clones.cloneDeterministic(address(this), salt, 0);
+            Clones.cloneDeterministic(proto, salt, 0);
             StringLookup(home).zzInit(value_);
             emit Made(home, salt);
         }

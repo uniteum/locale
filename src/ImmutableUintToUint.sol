@@ -49,6 +49,7 @@ contract ImmutableUintToUint is IUintToUint, IUintToUintMaker {
      * @inheritdoc IUintToUintMaker
      */
     function make(KeyValue[] memory keyValues, uint256 variant) public returns (address home) {
+        if (address(this) != proto) return ImmutableUintToUint(proto).make(keyValues, variant);
         bool exists;
         bytes32 salt;
         (exists, home, salt) = made(keyValues, variant);
