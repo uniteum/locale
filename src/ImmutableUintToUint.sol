@@ -5,49 +5,70 @@ import {IUintToUint} from "ilookup/IUintToUint.sol";
 import {IUintToUintMaker} from "ilookup/IUintToUintMaker.sol";
 import {Clones} from "clones/Clones.sol";
 
-/// @notice Immutable map from uint256 to uint256 with no governance or upgrade risk.
-/// The implementation is also a factory, allowing anyone to easily deploy an instance.
-/// Deterministic deployment ensures identical addresses across chains.
+/**
+ * @notice Immutable map from uint256 to uint256, with no governance or upgrade risk.
+ * @dev Deterministic deployment yields identical addresses across chains.
+ * The implementation is also a factory; anyone may deploy an instance.
+ */
 contract ImmutableUintToUint is IUintToUint, IUintToUintMaker {
-    address public immutable PROTO = address(this);
+    string public constant version = "2.1.0";
 
-    /// @inheritdoc IUintToUint
+    address public immutable proto = address(this);
+
+    /**
+     * @inheritdoc IUintToUint
+     */
     uint256[] public keyAt;
 
-    /// @inheritdoc IUintToUint
+    /**
+     * @inheritdoc IUintToUint
+     */
     mapping(uint256 => uint256) public valueOf;
 
-    /// @inheritdoc IUintToUint
+    /**
+     * @inheritdoc IUintToUint
+     */
     function length() external view returns (uint256) {
         return keyAt.length;
     }
 
-    /// @inheritdoc IUintToUintMaker
-    function made(KeyValue[] memory kvs) public view returns (bool exists, address expected, bytes32 salt) {
-        salt = keccak256(abi.encode(kvs));
-        expected = Clones.predictDeterministicAddress(PROTO, salt, PROTO);
-        exists = expected.code.length > 0;
+    /**
+     * @inheritdoc IUintToUintMaker
+     */
+    function made(KeyValue[] memory keyValues, uint256 variant)
+        public
+        view
+        returns (bool exists, address home, bytes32 salt)
+    {
+        salt = keccak256(abi.encode(keyValues)) ^ bytes32(variant);
+        home = Clones.predictDeterministicAddress(proto, salt, proto);
+        exists = home.code.length > 0;
     }
 
-    /// @inheritdoc IUintToUintMaker
-    function make(KeyValue[] memory kvs) public returns (address home) {
+    /**
+     * @inheritdoc IUintToUintMaker
+     */
+    function make(KeyValue[] memory keyValues, uint256 variant) public returns (address home) {
+        if (address(this) != proto) return ImmutableUintToUint(proto).make(keyValues, variant);
         bool exists;
         bytes32 salt;
-        (exists, home, salt) = made(kvs);
+        (exists, home, salt) = made(keyValues, variant);
         if (!exists) {
-            Clones.cloneDeterministic(PROTO, salt, 0);
-            ImmutableUintToUint(home).zzInit(kvs);
+            Clones.cloneDeterministic(proto, salt, 0);
+            ImmutableUintToUint(home).zzInit(keyValues);
             emit Made(home, salt);
         }
     }
 
-    /// @dev Only PROTO should call zzInit.
-    /// @param kvs The array of key value pairs sorted by key.
-    function zzInit(KeyValue[] memory kvs) public {
-        if (msg.sender != PROTO) revert Unauthorized();
-        for (uint256 i; i < kvs.length; ++i) {
-            keyAt.push(kvs[i].key);
-            valueOf[kvs[i].key] = kvs[i].value;
+    /**
+     * @dev Initializer; callable only by proto from {make}.
+     * @param keyValues The array of key value pairs sorted by key.
+     */
+    function zzInit(KeyValue[] memory keyValues) public {
+        if (msg.sender != proto) revert Unauthorized();
+        for (uint256 i; i < keyValues.length; ++i) {
+            keyAt.push(keyValues[i].key);
+            valueOf[keyValues[i].key] = keyValues[i].value;
         }
     }
 }

@@ -1,0 +1,59 @@
+{
+  "language": "Solidity",
+  "sources": {
+    "src/ImmutableUintToAddress.sol": {
+      "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.30;\n\nimport {IUintToAddress} from \"ilookup/IUintToAddress.sol\";\nimport {IUintToAddressMaker} from \"ilookup/IUintToAddressMaker.sol\";\nimport {Clones} from \"clones/Clones.sol\";\n\n/**\n * @notice Immutable map from uint256 to address, with no governance or upgrade risk.\n * @dev Deterministic deployment yields identical addresses across chains.\n * The implementation is also a factory; anyone may deploy an instance.\n */\ncontract ImmutableUintToAddress is IUintToAddress, IUintToAddressMaker {\n    string public constant version = \"2.1.0\";\n\n    address public immutable proto = address(this);\n\n    /**\n     * @inheritdoc IUintToAddress\n     */\n    uint256[] public keyAt;\n\n    /**\n     * @inheritdoc IUintToAddress\n     */\n    mapping(uint256 => address) public valueOf;\n\n    /**\n     * @inheritdoc IUintToAddress\n     */\n    function length() external view returns (uint256) {\n        return keyAt.length;\n    }\n\n    /**\n     * @inheritdoc IUintToAddressMaker\n     */\n    function made(KeyValue[] memory kvs, uint256 variant)\n        public\n        view\n        returns (bool exists, address expected, bytes32 salt)\n    {\n        salt = keccak256(abi.encode(kvs)) ^ bytes32(variant);\n        expected = Clones.predictDeterministicAddress(proto, salt, proto);\n        exists = expected.code.length > 0;\n    }\n\n    /**\n     * @inheritdoc IUintToAddressMaker\n     */\n    function make(KeyValue[] memory kvs, uint256 variant) public returns (address home) {\n        bool exists;\n        bytes32 salt;\n        (exists, home, salt) = made(kvs, variant);\n        if (!exists) {\n            Clones.cloneDeterministic(proto, salt, 0);\n            ImmutableUintToAddress(home).zzInit(kvs);\n            emit Made(home, salt);\n        }\n    }\n\n    /**\n     * @dev Initializer; callable only by proto from {make}.\n     * @param kvs The array of key value pairs sorted by key.\n     */\n    function zzInit(KeyValue[] memory kvs) public {\n        if (msg.sender != proto) revert Unauthorized();\n        for (uint256 i; i < kvs.length; ++i) {\n            keyAt.push(kvs[i].key);\n            valueOf[kvs[i].key] = kvs[i].value;\n        }\n    }\n}\n"
+    },
+    "lib/ilookup/IUintToAddress.sol": {
+      "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.30;\n\n/**\n *  @notice Mapping from uint256 to address.\n */\ninterface IUintToAddress {\n    /**\n     * @return total number of keys in the map.\n     */\n    function length() external view returns (uint256);\n\n    /**\n     * @dev Index must be less than {length}.\n     * @param index The position in the key list.\n     * @return key at the specified index.\n     */\n    function keyAt(uint256 index) external view returns (uint256 key);\n\n    /**\n     * @param key The key to look up.\n     * @return value mapped to the given key or zero address if not found.\n     */\n    function valueOf(uint256 key) external view returns (address value);\n}\n"
+    },
+    "lib/ilookup/IUintToAddressMaker.sol": {
+      "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.30;\n\nimport {IMaker} from \"./IMaker.sol\";\n\n/**\n *  @notice Make a lookup mapping uint256 to address.\n */\ninterface IUintToAddressMaker is IMaker {\n    /**\n     * @notice Map a key to a value.\n     */\n    struct KeyValue {\n        uint256 key;\n        address value;\n    }\n\n    /**\n     * @notice Predict the address of a lookup.\n     * @param keyValues The array of key value pairs sorted by key.\n     * @param variant Discriminator allowing distinct addresses for the same keyValues.\n     * @return exists Whether the lookup already exists.\n     * @return home The predicted address of the lookup.\n     * @return salt The salt used to create the lookup. salt = keccak256(abi.encode(keyValues, variant));\n     */\n    function made(KeyValue[] memory keyValues, uint256 variant)\n        external\n        view\n        returns (bool exists, address home, bytes32 salt);\n\n    /**\n     * @notice Create a lookup if it doesn't already exist.\n     * @param keyValues The array of key value pairs sorted by key.\n     * @param variant Discriminator allowing distinct addresses for the same keyValues.\n     * @return home The address of the new or existing lookup.\n     */\n    function make(KeyValue[] memory keyValues, uint256 variant) external returns (address home);\n}\n"
+    },
+    "lib/clones/Clones.sol": {
+      "content": "// SPDX-License-Identifier: MIT\n// OpenZeppelin Contracts (last updated v5.3.0) (proxy/Clones.sol)\n\npragma solidity ^0.8.30;\n\n/**\n * @dev https://eips.ethereum.org/EIPS/eip-1167[ERC-1167] is a standard for\n * deploying minimal proxy contracts, also known as \"clones\".\n *\n * > To simply and cheaply clone contract functionality in an immutable way, this standard specifies\n * > a minimal bytecode implementation that delegates all calls to a known, fixed address.\n *\n * This is a stripped-down version of OpenZeppelin's Clones library (v5.3.0), containing only\n * deterministic CREATE2 deployment functions with explicit value parameter support.\n * The following functions have been removed: clone(), and the overloads of cloneDeterministic()\n * and predictDeterministicAddress() that omit the value or deployer parameters.\n *\n * Original source: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v5.3.0/contracts/proxy/Clones.sol\n */\nlibrary Clones {\n    /**\n     * @dev Deploys and returns the address of a clone that mimics the behavior of `implementation`.\n     *\n     * This function uses the create2 opcode and a `salt` to deterministically deploy\n     * the clone. Using the same `implementation` and `salt` multiple times will revert, since\n     * the clones cannot be deployed twice at the same address.\n     *\n     * NOTE: Using a non-zero value at creation will require the contract using this function (e.g. a factory)\n     * to always have enough balance for new deployments. Consider exposing this function under a payable method.\n     */\n    function cloneDeterministic(\n        address implementation,\n        bytes32 salt,\n        uint256 value\n    ) internal returns (address instance) {\n        assembly (\"memory-safe\") {\n            // Cleans the upper 96 bits of the `implementation` word, then packs the first 3 bytes\n            // of the `implementation` address with the bytecode before the address.\n            mstore(\n                0x00,\n                or(\n                    shr(0xe8, shl(0x60, implementation)),\n                    0x3d602d80600a3d3981f3363d3d373d3d3d363d73000000\n                )\n            )\n            // Packs the remaining 17 bytes of `implementation` with the bytecode after the address.\n            mstore(\n                0x20,\n                or(shl(0x78, implementation), 0x5af43d82803e903d91602b57fd5bf3)\n            )\n            instance := create2(value, 0x09, 0x37, salt)\n        }\n    }\n\n    /**\n     * @dev Computes the address of a clone deployed using {Clones-cloneDeterministic}.\n     */\n    function predictDeterministicAddress(\n        address implementation,\n        bytes32 salt,\n        address deployer\n    ) internal pure returns (address predicted) {\n        assembly (\"memory-safe\") {\n            let ptr := mload(0x40)\n            mstore(add(ptr, 0x38), deployer)\n            mstore(add(ptr, 0x24), 0x5af43d82803e903d91602b57fd5bf3ff)\n            mstore(add(ptr, 0x14), implementation)\n            mstore(ptr, 0x3d602d80600a3d3981f3363d3d373d3d3d363d73)\n            mstore(add(ptr, 0x58), salt)\n            mstore(add(ptr, 0x78), keccak256(add(ptr, 0x0c), 0x37))\n            predicted := and(\n                keccak256(add(ptr, 0x43), 0x55),\n                0xffffffffffffffffffffffffffffffffffffffff\n            )\n        }\n    }\n}\n"
+    },
+    "lib/ilookup/IMaker.sol": {
+      "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.30;\n\n/**\n *  @notice Events and errors for makers.\n */\ninterface IMaker {\n    /**\n     * @notice Emit when something is made.\n     */\n    event Made(address indexed home, bytes32 indexed salt);\n\n    /**\n     * @notice Revert if someone tries to reinitialize something made.\n     */\n    error Unauthorized();\n}\n"
+    }
+  },
+  "settings": {
+    "remappings": [
+      "forge-std/=lib/forge-std/src/",
+      "crucible/=lib/crucible/",
+      "ilookup/=lib/ilookup/",
+      "clones/=lib/clones/"
+    ],
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "metadata": {
+      "useLiteralContent": false,
+      "bytecodeHash": "none",
+      "appendCBOR": false
+    },
+    "outputSelection": {
+      "*": {
+        "*": [
+          "abi",
+          "evm.bytecode.object",
+          "evm.bytecode.sourceMap",
+          "evm.bytecode.linkReferences",
+          "evm.deployedBytecode.object",
+          "evm.deployedBytecode.sourceMap",
+          "evm.deployedBytecode.linkReferences",
+          "evm.deployedBytecode.immutableReferences",
+          "evm.methodIdentifiers",
+          "metadata"
+        ]
+      }
+    },
+    "evmVersion": "cancun",
+    "viaIR": true,
+    "debug": {
+      "revertStrings": "default"
+    },
+    "libraries": {}
+  }
+}

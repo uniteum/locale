@@ -1,29 +1,29 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.30;
 
-import {IAddressLookup} from "ilookup/IAddressLookup.sol";
-import {IUintToAddressMaker} from "ilookup/IUintToAddressMaker.sol";
+import {IStringLookup} from "ilookup/IStringLookup.sol";
+import {IUintToStringMaker} from "ilookup/IUintToStringMaker.sol";
 import {Clones} from "clones/Clones.sol";
 
 /**
- * @notice Immutably map a single predictable address to a chain-specific address.
+ * @notice Immutably map a single predictable address to a chain-specific string.
  * @dev A trustless cross-chain reference with no governance or upgrade risk.
  * Contracts, SDKs, and UIs can hardcode one address and resolve to the local
  * value on any chain.
- * @dev The implementation is also a factory; anyone may deploy an AddressLookup.
+ * @dev The implementation is also a factory; anyone may deploy a StringLookup.
  */
-contract AddressLookup is IAddressLookup, IUintToAddressMaker {
+contract StringLookup is IStringLookup, IUintToStringMaker {
     string public constant version = "2.1.0";
 
     address public immutable proto = address(this);
 
     /**
-     * @inheritdoc IAddressLookup
+     * @inheritdoc IStringLookup
      */
-    address public value;
+    string public value;
 
     /**
-     * @inheritdoc IUintToAddressMaker
+     * @inheritdoc IUintToStringMaker
      */
     function made(KeyValue[] memory keyValues, uint256 variant)
         public
@@ -36,15 +36,15 @@ contract AddressLookup is IAddressLookup, IUintToAddressMaker {
     }
 
     /**
-     * @inheritdoc IUintToAddressMaker
+     * @inheritdoc IUintToStringMaker
      */
     function make(KeyValue[] memory keyValues, uint256 variant) public returns (address home) {
-        if (address(this) != proto) return AddressLookup(proto).make(keyValues, variant);
+        if (address(this) != proto) return StringLookup(proto).make(keyValues, variant);
         bool exists;
         bytes32 salt;
         (exists, home, salt) = made(keyValues, variant);
         if (!exists) {
-            address value_;
+            string memory value_;
             for (uint256 i; i < keyValues.length; ++i) {
                 if (keyValues[i].key == block.chainid) {
                     value_ = keyValues[i].value;
@@ -52,16 +52,16 @@ contract AddressLookup is IAddressLookup, IUintToAddressMaker {
                 }
             }
             Clones.cloneDeterministic(proto, salt, 0);
-            AddressLookup(home).zzInit(value_);
+            StringLookup(home).zzInit(value_);
             emit Made(home, salt);
         }
     }
 
     /**
      * @dev Initializer; callable only by proto from {make}.
-     * @param value_ The value address for the current chain.
+     * @param value_ The value string for the current chain.
      */
-    function zzInit(address value_) public {
+    function zzInit(string memory value_) public {
         if (msg.sender != proto) revert Unauthorized();
         value = value_;
     }

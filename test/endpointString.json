@@ -1,0 +1,14 @@
+{
+  "env": "test",
+  "id": "endpointString",
+  "keyValues": [
+    {
+      "key": 97,
+      "value": "https://bsc-testnet.example/rpc"
+    },
+    {
+      "key": 11155111,
+      "value": "https://sepolia.example/rpc"
+    }
+  ]
+}
