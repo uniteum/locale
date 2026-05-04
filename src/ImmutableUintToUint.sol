@@ -35,39 +35,39 @@ contract ImmutableUintToUint is IUintToUint, IUintToUintMaker {
     /**
      * @inheritdoc IUintToUintMaker
      */
-    function made(KeyValue[] memory kvs, uint256 variant)
+    function made(KeyValue[] memory keyValues, uint256 variant)
         public
         view
-        returns (bool exists, address expected, bytes32 salt)
+        returns (bool exists, address home, bytes32 salt)
     {
-        salt = keccak256(abi.encode(kvs)) ^ bytes32(variant);
-        expected = Clones.predictDeterministicAddress(proto, salt, proto);
-        exists = expected.code.length > 0;
+        salt = keccak256(abi.encode(keyValues)) ^ bytes32(variant);
+        home = Clones.predictDeterministicAddress(proto, salt, proto);
+        exists = home.code.length > 0;
     }
 
     /**
      * @inheritdoc IUintToUintMaker
      */
-    function make(KeyValue[] memory kvs, uint256 variant) public returns (address home) {
+    function make(KeyValue[] memory keyValues, uint256 variant) public returns (address home) {
         bool exists;
         bytes32 salt;
-        (exists, home, salt) = made(kvs, variant);
+        (exists, home, salt) = made(keyValues, variant);
         if (!exists) {
             Clones.cloneDeterministic(proto, salt, 0);
-            ImmutableUintToUint(home).zzInit(kvs);
+            ImmutableUintToUint(home).zzInit(keyValues);
             emit Made(home, salt);
         }
     }
 
     /**
      * @dev Initializer; callable only by proto from {make}.
-     * @param kvs The array of key value pairs sorted by key.
+     * @param keyValues The array of key value pairs sorted by key.
      */
-    function zzInit(KeyValue[] memory kvs) public {
+    function zzInit(KeyValue[] memory keyValues) public {
         if (msg.sender != proto) revert Unauthorized();
-        for (uint256 i; i < kvs.length; ++i) {
-            keyAt.push(kvs[i].key);
-            valueOf[kvs[i].key] = kvs[i].value;
+        for (uint256 i; i < keyValues.length; ++i) {
+            keyAt.push(keyValues[i].key);
+            valueOf[keyValues[i].key] = keyValues[i].value;
         }
     }
 }
