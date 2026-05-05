@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ImmutableUintToUint — Bitsy uint→uint lookup, deployed via Nick.
 set -euo pipefail
-source "$(git rev-parse --show-toplevel)/lib/crucible/script/lib.sh"
+source "$(git rev-parse --show-toplevel)/lib/crucible/script/proto.sh"
 
 mask=0xfff000000000000000000000000000000000ffff
 target=0xc2c000000000000000000000000000000000e220
