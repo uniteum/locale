@@ -71,17 +71,16 @@ contract AddressLookupTest is Test {
         assertEq(address1, address2, "made() and make() should return the same address.");
     }
 
-    // Salt is keccak256(abi.encode(encode(keyValues))) XOR bytes32(variant) — the double-encode
-    // comes from the inherited Prototype.made(bytes, uint256) overload.
+    // Salt is keccak256(encode(keyValues)) XOR bytes32(variant), where encode() is abi.encode().
     function test_AddressLookupSaltIsXorOfVariant() public view {
         uint256 variant = 7;
         (,, bytes32 salt) = proto.made(config.keyValues, variant);
 
         bytes memory args = proto.encode(config.keyValues);
-        bytes32 xorSalt = keccak256(abi.encode(args)) ^ bytes32(variant);
+        bytes32 xorSalt = keccak256(args) ^ bytes32(variant);
         bytes32 absorbedSalt = keccak256(abi.encode(args, variant));
 
-        assertEq(salt, xorSalt, "salt should be keccak(abi.encode(args)) XOR variant");
+        assertEq(salt, xorSalt, "salt should be keccak(args) XOR variant");
         assertNotEq(salt, absorbedSalt, "salt should not absorb variant inside abi.encode");
     }
 
@@ -90,10 +89,10 @@ contract AddressLookupTest is Test {
         (,, bytes32 salt) = proto.made(config.keyValues, 0);
 
         bytes memory args = proto.encode(config.keyValues);
-        bytes32 argsHash = keccak256(abi.encode(args));
+        bytes32 argsHash = keccak256(args);
         bytes32 absorbedSalt = keccak256(abi.encode(args, uint256(0)));
 
-        assertEq(salt, argsHash, "salt with variant=0 should equal keccak(abi.encode(args))");
+        assertEq(salt, argsHash, "salt with variant=0 should equal keccak(args)");
         assertNotEq(salt, absorbedSalt, "salt should not equal abi.encode(args, 0) hash");
     }
 
