@@ -1,21 +1,17 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.30;
+pragma solidity ^0.8.34;
 
 import {IUintToAddress} from "ilookup/IUintToAddress.sol";
 import {IUintToAddressMaker} from "ilookup/IUintToAddressMaker.sol";
-import {Clones} from "clones/Clones.sol";
+import {Prototype} from "proto/Prototype.sol";
 
 /**
  * @notice Immutable map from uint256 to address, with no governance or upgrade risk.
  * @dev Deterministic deployment yields identical addresses across chains.
  * The implementation is also a factory; anyone may deploy an instance.
  */
-contract ImmutableUintToAddress is IUintToAddress, IUintToAddressMaker {
-    string public constant version = "2.2.0";
-
-    address public immutable proto = address(this);
-
-    error Unauthorized();
+contract ImmutableUintToAddress is Prototype, IUintToAddress, IUintToAddressMaker {
+    string public constant version = "3.0.0";
 
     /**
      * @inheritdoc IUintToAddress
@@ -35,41 +31,45 @@ contract ImmutableUintToAddress is IUintToAddress, IUintToAddressMaker {
     }
 
     /**
+     * @notice ABI-encode the typed args used to derive a clone's address.
+     * @param keyValues The array of key value pairs sorted by key.
+     * @return args The bytes blob consumed by {make} and {made}.
+     */
+    function encode(KeyValue[] memory keyValues) public pure returns (bytes memory args) {
+        args = abi.encode(keyValues);
+    }
+
+    /**
      * @inheritdoc IUintToAddressMaker
      */
     function made(KeyValue[] memory keyValues, uint256 variant)
-        public
+        external
         view
         returns (bool exists, address home, bytes32 salt)
     {
-        salt = keccak256(abi.encode(keyValues)) ^ bytes32(variant);
-        home = Clones.predictDeterministicAddress(proto, salt, proto);
-        exists = home.code.length > 0;
+        (exists, home, salt) = this.made(encode(keyValues), variant);
     }
 
     /**
      * @inheritdoc IUintToAddressMaker
      */
-    function make(KeyValue[] memory keyValues, uint256 variant) public returns (address home) {
-        if (address(this) != proto) {
-            return ImmutableUintToAddress(proto).make(keyValues, variant);
-        }
-        bool exists;
-        bytes32 salt;
-        (exists, home, salt) = made(keyValues, variant);
-        if (!exists) {
-            Clones.cloneDeterministic(proto, salt, 0);
-            ImmutableUintToAddress(home).zzInit(keyValues);
-            emit Made(home, salt);
-        }
+    function make(KeyValue[] memory keyValues, uint256 variant) external returns (address home) {
+        (, home,) = this.make(encode(keyValues), variant);
     }
 
     /**
-     * @dev Initializer; callable only by proto from {make}.
-     * @param keyValues The array of key value pairs sorted by key.
+     * @inheritdoc Prototype
+     * @dev Decodes the keyValues array and stores every entry.
      */
-    function zzInit(KeyValue[] memory keyValues) public {
-        if (msg.sender != proto) revert Unauthorized();
+    function zzInit(
+        bytes calldata args,
+        uint256 /*variant*/
+    )
+        public
+        override
+        onlyProto
+    {
+        KeyValue[] memory keyValues = abi.decode(args, (KeyValue[]));
         for (uint256 i; i < keyValues.length; ++i) {
             keyAt.push(keyValues[i].key);
             valueOf[keyValues[i].key] = keyValues[i].value;

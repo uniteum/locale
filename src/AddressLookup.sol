@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.30;
+pragma solidity ^0.8.34;
 
 import {IAddressLookup} from "ilookup/IAddressLookup.sol";
 import {IUintToAddressMaker} from "ilookup/IUintToAddressMaker.sol";
@@ -44,10 +44,7 @@ contract AddressLookup is Prototype, IAddressLookup, IUintToAddressMaker {
      * @inheritdoc IUintToAddressMaker
      */
     function make(KeyValue[] memory keyValues, uint256 variant) external returns (address home) {
-        bool exists;
-        bytes32 salt;
-        (exists, home, salt) = this.make(encode(keyValues), variant);
-        if (!exists) emit Made(home, salt);
+        (, home,) = this.make(encode(keyValues), variant);
     }
 
     /**
