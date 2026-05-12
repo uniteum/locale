@@ -3,7 +3,7 @@ pragma solidity ^0.8.30;
 
 import {IAddressLookup} from "ilookup/IAddressLookup.sol";
 import {IUintToAddressMaker} from "ilookup/IUintToAddressMaker.sol";
-import {Clones} from "clones/Clones.sol";
+import {Prototype} from "proto/Prototype.sol";
 
 /**
  * @notice Immutably map a single predictable address to a chain-specific address.
@@ -12,10 +12,8 @@ import {Clones} from "clones/Clones.sol";
  * value on any chain.
  * @dev The implementation is also a factory; anyone may deploy an AddressLookup.
  */
-contract AddressLookup is IAddressLookup, IUintToAddressMaker {
-    string public constant version = "2.2.0";
-
-    address public immutable proto = address(this);
+contract AddressLookup is Prototype, IAddressLookup, IUintToAddressMaker {
+    string public constant version = "3.0.0";
 
     /**
      * @inheritdoc IAddressLookup
@@ -23,49 +21,53 @@ contract AddressLookup is IAddressLookup, IUintToAddressMaker {
     address public value;
 
     /**
-     * @inheritdoc IUintToAddressMaker
+     * @notice ABI-encode the typed args used to derive a clone's address.
+     * @param keyValues The array of key value pairs sorted by key.
+     * @return args The bytes blob consumed by {make} and {made}.
      */
-    function made(
-        KeyValue[] memory keyValues,
-        uint256 variant
-    ) public view returns (bool exists, address home, bytes32 salt) {
-        salt = keccak256(abi.encode(keyValues)) ^ bytes32(variant);
-        home = Clones.predictDeterministicAddress(proto, salt, proto);
-        exists = home.code.length > 0;
+    function encode(KeyValue[] memory keyValues) public pure returns (bytes memory args) {
+        args = abi.encode(keyValues);
     }
 
     /**
      * @inheritdoc IUintToAddressMaker
      */
-    function make(
-        KeyValue[] memory keyValues,
-        uint256 variant
-    ) public returns (address home) {
-        if (address(this) != proto)
-            return AddressLookup(proto).make(keyValues, variant);
+    function made(KeyValue[] memory keyValues, uint256 variant)
+        external
+        view
+        returns (bool exists, address home, bytes32 salt)
+    {
+        (exists, home, salt) = this.made(encode(keyValues), variant);
+    }
+
+    /**
+     * @inheritdoc IUintToAddressMaker
+     */
+    function make(KeyValue[] memory keyValues, uint256 variant) external returns (address home) {
         bool exists;
         bytes32 salt;
-        (exists, home, salt) = made(keyValues, variant);
-        if (!exists) {
-            address value_;
-            for (uint256 i; i < keyValues.length; ++i) {
-                if (keyValues[i].key == block.chainid) {
-                    value_ = keyValues[i].value;
-                    break;
-                }
-            }
-            Clones.cloneDeterministic(proto, salt, 0);
-            AddressLookup(home).zzInit(value_);
-            emit Made(home, salt);
-        }
+        (exists, home, salt) = this.make(encode(keyValues), variant);
+        if (!exists) emit Made(home, salt);
     }
 
     /**
-     * @dev Initializer; callable only by proto from {make}.
-     * @param value_ The value address for the current chain.
+     * @inheritdoc Prototype
+     * @dev Decodes the keyValues array and stores the entry matching the current chain id.
      */
-    function zzInit(address value_) public {
-        if (msg.sender != proto) revert Unauthorized();
-        value = value_;
+    function zzInit(
+        bytes calldata args,
+        uint256 /*variant*/
+    )
+        public
+        override
+        onlyProto
+    {
+        KeyValue[] memory keyValues = abi.decode(args, (KeyValue[]));
+        for (uint256 i; i < keyValues.length; ++i) {
+            if (keyValues[i].key == block.chainid) {
+                value = keyValues[i].value;
+                break;
+            }
+        }
     }
 }

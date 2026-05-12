@@ -71,27 +71,30 @@ contract AddressLookupTest is Test {
         assertEq(address1, address2, "made() and make() should return the same address.");
     }
 
-    // Salt is keccak256(abi.encode(keyValues)) XOR bytes32(variant), not abi.encode(keyValues, variant).
+    // Salt is keccak256(abi.encode(encode(keyValues))) XOR bytes32(variant) — the double-encode
+    // comes from the inherited Prototype.made(bytes, uint256) overload.
     function test_AddressLookupSaltIsXorOfVariant() public view {
         uint256 variant = 7;
         (,, bytes32 salt) = proto.made(config.keyValues, variant);
 
-        bytes32 xorSalt = keccak256(abi.encode(config.keyValues)) ^ bytes32(variant);
-        bytes32 absorbedSalt = keccak256(abi.encode(config.keyValues, variant));
+        bytes memory args = proto.encode(config.keyValues);
+        bytes32 xorSalt = keccak256(abi.encode(args)) ^ bytes32(variant);
+        bytes32 absorbedSalt = keccak256(abi.encode(args, variant));
 
-        assertEq(salt, xorSalt, "salt should be keccak(abi.encode(kvs)) XOR variant");
+        assertEq(salt, xorSalt, "salt should be keccak(abi.encode(args)) XOR variant");
         assertNotEq(salt, absorbedSalt, "salt should not absorb variant inside abi.encode");
     }
 
-    // With variant=0 the XOR form leaves the kv-only hash unchanged; the absorbed form does not.
-    function test_AddressLookupSaltZeroVariantEqualsKvHash() public view {
+    // With variant=0 the XOR form leaves the args-only hash unchanged; the absorbed form does not.
+    function test_AddressLookupSaltZeroVariantEqualsArgsHash() public view {
         (,, bytes32 salt) = proto.made(config.keyValues, 0);
 
-        bytes32 kvHash = keccak256(abi.encode(config.keyValues));
-        bytes32 absorbedSalt = keccak256(abi.encode(config.keyValues, uint256(0)));
+        bytes memory args = proto.encode(config.keyValues);
+        bytes32 argsHash = keccak256(abi.encode(args));
+        bytes32 absorbedSalt = keccak256(abi.encode(args, uint256(0)));
 
-        assertEq(salt, kvHash, "salt with variant=0 should equal keccak(abi.encode(kvs))");
-        assertNotEq(salt, absorbedSalt, "salt should not equal abi.encode(kvs, 0) hash");
+        assertEq(salt, argsHash, "salt with variant=0 should equal keccak(abi.encode(args))");
+        assertNotEq(salt, absorbedSalt, "salt should not equal abi.encode(args, 0) hash");
     }
 
     // Helper for switching chain-ids during made()

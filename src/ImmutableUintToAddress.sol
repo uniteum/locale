@@ -15,6 +15,8 @@ contract ImmutableUintToAddress is IUintToAddress, IUintToAddressMaker {
 
     address public immutable proto = address(this);
 
+    error Unauthorized();
+
     /**
      * @inheritdoc IUintToAddress
      */
@@ -35,10 +37,11 @@ contract ImmutableUintToAddress is IUintToAddress, IUintToAddressMaker {
     /**
      * @inheritdoc IUintToAddressMaker
      */
-    function made(
-        KeyValue[] memory keyValues,
-        uint256 variant
-    ) public view returns (bool exists, address home, bytes32 salt) {
+    function made(KeyValue[] memory keyValues, uint256 variant)
+        public
+        view
+        returns (bool exists, address home, bytes32 salt)
+    {
         salt = keccak256(abi.encode(keyValues)) ^ bytes32(variant);
         home = Clones.predictDeterministicAddress(proto, salt, proto);
         exists = home.code.length > 0;
@@ -47,12 +50,10 @@ contract ImmutableUintToAddress is IUintToAddress, IUintToAddressMaker {
     /**
      * @inheritdoc IUintToAddressMaker
      */
-    function make(
-        KeyValue[] memory keyValues,
-        uint256 variant
-    ) public returns (address home) {
-        if (address(this) != proto)
+    function make(KeyValue[] memory keyValues, uint256 variant) public returns (address home) {
+        if (address(this) != proto) {
             return ImmutableUintToAddress(proto).make(keyValues, variant);
+        }
         bool exists;
         bytes32 salt;
         (exists, home, salt) = made(keyValues, variant);

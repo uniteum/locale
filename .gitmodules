@@ -10,3 +10,9 @@
 [submodule "lib/crucible"]
 	path = lib/crucible
 	url = git@github.com:uniteum/crucible.git
+[submodule "lib/proto"]
+	path = lib/proto
+	url = https://github.com/uniteum/proto
+[submodule "lib/iproto"]
+	path = lib/iproto
+	url = https://github.com/uniteum/iproto

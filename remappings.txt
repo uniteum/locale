@@ -2,3 +2,5 @@ forge-std/=lib/forge-std/src/
 crucible/=lib/crucible/
 ilookup/=lib/ilookup/
 clones/=lib/clones/
+proto/=lib/proto/src/
+iproto/=lib/iproto/

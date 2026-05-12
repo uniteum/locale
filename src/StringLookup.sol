@@ -17,6 +17,8 @@ contract StringLookup is IStringLookup, IUintToStringMaker {
 
     address public immutable proto = address(this);
 
+    error Unauthorized();
+
     /**
      * @inheritdoc IStringLookup
      */
@@ -25,10 +27,11 @@ contract StringLookup is IStringLookup, IUintToStringMaker {
     /**
      * @inheritdoc IUintToStringMaker
      */
-    function made(
-        KeyValue[] memory keyValues,
-        uint256 variant
-    ) public view returns (bool exists, address home, bytes32 salt) {
+    function made(KeyValue[] memory keyValues, uint256 variant)
+        public
+        view
+        returns (bool exists, address home, bytes32 salt)
+    {
         salt = keccak256(abi.encode(keyValues)) ^ bytes32(variant);
         home = Clones.predictDeterministicAddress(proto, salt, proto);
         exists = home.code.length > 0;
@@ -37,12 +40,10 @@ contract StringLookup is IStringLookup, IUintToStringMaker {
     /**
      * @inheritdoc IUintToStringMaker
      */
-    function make(
-        KeyValue[] memory keyValues,
-        uint256 variant
-    ) public returns (address home) {
-        if (address(this) != proto)
+    function make(KeyValue[] memory keyValues, uint256 variant) public returns (address home) {
+        if (address(this) != proto) {
             return StringLookup(proto).make(keyValues, variant);
+        }
         bool exists;
         bytes32 salt;
         (exists, home, salt) = made(keyValues, variant);
