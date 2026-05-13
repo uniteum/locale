@@ -51,14 +51,8 @@ contract AddressLookup is Prototype, IAddressLookup, IUintToAddressMaker {
      * @inheritdoc Prototype
      * @dev Decodes the keyValues array and stores the entry matching the current chain id.
      */
-    function zzInit(
-        bytes calldata args,
-        uint256 /*variant*/
-    )
-        public
-        override
-        onlyProto
-    {
+    function zzInit(bytes calldata args, uint256 variant) public override {
+        super.zzInit(args, variant);
         KeyValue[] memory keyValues = abi.decode(args, (KeyValue[]));
         for (uint256 i; i < keyValues.length; ++i) {
             if (keyValues[i].key == block.chainid) {

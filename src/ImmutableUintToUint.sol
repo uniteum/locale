@@ -61,14 +61,8 @@ contract ImmutableUintToUint is Prototype, IUintToUint, IUintToUintMaker {
      * @inheritdoc Prototype
      * @dev Decodes the keyValues array and stores every entry.
      */
-    function zzInit(
-        bytes calldata args,
-        uint256 /*variant*/
-    )
-        public
-        override
-        onlyProto
-    {
+    function zzInit(bytes calldata args, uint256 variant) public override {
+        super.zzInit(args, variant);
         KeyValue[] memory keyValues = abi.decode(args, (KeyValue[]));
         for (uint256 i; i < keyValues.length; ++i) {
             keyAt.push(keyValues[i].key);
