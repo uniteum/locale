@@ -11,6 +11,7 @@ import {Prototype} from "proto/Prototype.sol";
  * Contracts, SDKs, and UIs can hardcode one address and resolve to the local
  * value on any chain.
  * @dev The implementation is also a factory; anyone may deploy a StringLookup.
+ * @author Paul Reinholdtsen (reinholdtsen.eth)
  */
 contract StringLookup is Prototype, IStringLookup, IUintToStringMaker {
     string public constant version = "3.0.0";
@@ -25,26 +26,30 @@ contract StringLookup is Prototype, IStringLookup, IUintToStringMaker {
      * @param keyValues The array of key value pairs sorted by key.
      * @return args The bytes blob consumed by {make} and {made}.
      */
-    function encode(KeyValue[] memory keyValues) public pure returns (bytes memory args) {
+    function encode(
+        KeyValue[] memory keyValues
+    ) public pure returns (bytes memory args) {
         args = abi.encode(keyValues);
     }
 
     /**
      * @inheritdoc IUintToStringMaker
      */
-    function made(KeyValue[] memory keyValues, uint256 variant)
-        external
-        view
-        returns (bool exists, address home, bytes32 salt)
-    {
+    function made(
+        KeyValue[] memory keyValues,
+        uint256 variant
+    ) external view returns (bool exists, address home, bytes32 salt) {
         (exists, home, salt) = this.made(encode(keyValues), variant);
     }
 
     /**
      * @inheritdoc IUintToStringMaker
      */
-    function make(KeyValue[] memory keyValues, uint256 variant) external returns (address home) {
-        (, home,) = this.make(encode(keyValues), variant);
+    function make(
+        KeyValue[] memory keyValues,
+        uint256 variant
+    ) external returns (address home) {
+        (, home, ) = this.make(encode(keyValues), variant);
     }
 
     /**
