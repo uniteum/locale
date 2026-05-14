@@ -11,7 +11,7 @@ contract ImmutableUintToUintTest is Test {
 
     // The contract maps a key and a network to a KV lookup table
     struct Config {
-        IUintToUintMaker.KeyValue[] entries;
+        IUintToUintMaker.Entry[] entries;
         string env;
         string id;
     }
@@ -58,7 +58,7 @@ contract ImmutableUintToUintTest is Test {
     // Test that different KVs affect the resulting address.
     function test_UintToUintCloneDifferentKVsGivesDifferentAddress() public {
         // Make a copy of the config KV's and change the first element
-        IUintToUintMaker.KeyValue[] memory altered = config.entries;
+        IUintToUintMaker.Entry[] memory altered = config.entries;
         altered[0].value = 42;
 
         // Deploy with both sets of KVs
@@ -97,7 +97,7 @@ contract ImmutableUintToUintTest is Test {
     // Test that empty KVs is acceptable (This should probably be reversed but it's currently allowed)
     function test_UintToUintEmptyConfigIsDeterministic() public {
         // Need an empty set of KVs
-        IUintToUintMaker.KeyValue[] memory empty;
+        IUintToUintMaker.Entry[] memory empty;
 
         // Call made() on the empty set of KVs
         (, address address1, bytes32 salt1) = proto.made(empty, 0);

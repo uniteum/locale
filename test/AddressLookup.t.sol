@@ -11,7 +11,7 @@ contract AddressLookupTest is Test {
 
     // The contract maps a key and a network to a KV lookup table
     struct Config {
-        AddressLookup.KeyValue[] entries;
+        AddressLookup.Entry[] entries;
         string env;
         string id;
     }
@@ -51,7 +51,7 @@ contract AddressLookupTest is Test {
 
     // Test that different KVs affect the resulting address.
     function test_AddressLookupMakeDifferentKVsGivesDifferentAddress() public {
-        AddressLookup.KeyValue[] memory altered = config.entries;
+        AddressLookup.Entry[] memory altered = config.entries;
         altered[0].value = address(42);
         address address1 = proto.make(config.entries, 0);
         address address2 = proto.make(altered, 0);
@@ -62,7 +62,7 @@ contract AddressLookupTest is Test {
 
     // Test that empty KVs is acceptable (This should probably be reversed but it's currently allowed)
     function test_AddressLookupEmptyConfigIsDeterministic() public {
-        AddressLookup.KeyValue[] memory empty;
+        AddressLookup.Entry[] memory empty;
         (, address address1, bytes32 salt1) = proto.made(empty, 0);
         assertNotEq(address1, address(0), "made() on empty KVs failed.");
         assertNotEq(salt1, 0, "salt1 unexpectedly zero.");

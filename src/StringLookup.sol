@@ -25,7 +25,7 @@ contract StringLookup is IStringLookup, IUintToStringMaker, Prototype {
     /**
      * @inheritdoc IUintToStringMaker
      */
-    function made(KeyValue[] memory entries, uint256 variant)
+    function made(Entry[] memory entries, uint256 variant)
         external
         view
         returns (bool exists, address home, bytes32 salt)
@@ -36,7 +36,7 @@ contract StringLookup is IStringLookup, IUintToStringMaker, Prototype {
     /**
      * @inheritdoc IUintToStringMaker
      */
-    function make(KeyValue[] memory entries, uint256 variant) external returns (address home) {
+    function make(Entry[] memory entries, uint256 variant) external returns (address home) {
         (, home,) = this.make(encode(entries), variant);
     }
 
@@ -45,7 +45,7 @@ contract StringLookup is IStringLookup, IUintToStringMaker, Prototype {
      * @dev Decodes the entries array and stores the entry matching the current chain id.
      */
     function zzInit(bytes calldata args, uint256) external override onlyProto {
-        KeyValue[] memory entries = abi.decode(args, (KeyValue[]));
+        Entry[] memory entries = abi.decode(args, (Entry[]));
         for (uint256 i; i < entries.length; ++i) {
             if (entries[i].key == block.chainid) {
                 value = entries[i].value;
@@ -59,7 +59,7 @@ contract StringLookup is IStringLookup, IUintToStringMaker, Prototype {
      * @param entries The array of key value pairs sorted by key.
      * @return args The bytes blob consumed by {make} and {made}.
      */
-    function encode(KeyValue[] memory entries) public pure returns (bytes memory args) {
+    function encode(Entry[] memory entries) public pure returns (bytes memory args) {
         args = abi.encode(entries);
     }
 }

@@ -36,7 +36,7 @@ contract ImmutableUintToUint is IUintToUint, IUintToUintMaker, Prototype {
     /**
      * @inheritdoc IUintToUintMaker
      */
-    function made(KeyValue[] memory entries, uint256 variant)
+    function made(Entry[] memory entries, uint256 variant)
         external
         view
         returns (bool exists, address home, bytes32 salt)
@@ -47,7 +47,7 @@ contract ImmutableUintToUint is IUintToUint, IUintToUintMaker, Prototype {
     /**
      * @inheritdoc IUintToUintMaker
      */
-    function make(KeyValue[] memory entries, uint256 variant) external returns (address home) {
+    function make(Entry[] memory entries, uint256 variant) external returns (address home) {
         (, home,) = this.make(encode(entries), variant);
     }
 
@@ -56,7 +56,7 @@ contract ImmutableUintToUint is IUintToUint, IUintToUintMaker, Prototype {
      * @dev Decodes the entries array and stores every entry.
      */
     function zzInit(bytes calldata args, uint256) external override onlyProto {
-        KeyValue[] memory entries = abi.decode(args, (KeyValue[]));
+        Entry[] memory entries = abi.decode(args, (Entry[]));
         for (uint256 i; i < entries.length; ++i) {
             keyAt.push(entries[i].key);
             valueOf[entries[i].key] = entries[i].value;
@@ -68,7 +68,7 @@ contract ImmutableUintToUint is IUintToUint, IUintToUintMaker, Prototype {
      * @param entries The array of key value pairs sorted by key.
      * @return args The bytes blob consumed by {make} and {made}.
      */
-    function encode(KeyValue[] memory entries) public pure returns (bytes memory args) {
+    function encode(Entry[] memory entries) public pure returns (bytes memory args) {
         args = abi.encode(entries);
     }
 }

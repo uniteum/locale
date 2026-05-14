@@ -12,7 +12,7 @@ contract StringLookupTest is Test {
 
     // The contract maps a key and a network to a KV lookup table
     struct Config {
-        IUintToStringMaker.KeyValue[] entries;
+        IUintToStringMaker.Entry[] entries;
         string env;
         string id;
     }
@@ -52,7 +52,7 @@ contract StringLookupTest is Test {
 
     // Test that different KVs affect the resulting address.
     function test_StringLookupMakeDifferentKVsGivesDifferentAddress() public {
-        IUintToStringMaker.KeyValue[] memory altered = config.entries;
+        IUintToStringMaker.Entry[] memory altered = config.entries;
         altered[0].value = "https://different.example/rpc";
         address address1 = proto.make(config.entries, 0);
         address address2 = proto.make(altered, 0);
@@ -63,7 +63,7 @@ contract StringLookupTest is Test {
 
     // Test that empty KVs is acceptable (This should probably be reversed but it's currently allowed)
     function test_StringLookupEmptyConfigIsDeterministic() public {
-        IUintToStringMaker.KeyValue[] memory empty;
+        IUintToStringMaker.Entry[] memory empty;
         (, address address1, bytes32 salt1) = proto.made(empty, 0);
         assertNotEq(address1, address(0), "made() on empty KVs failed.");
         assertNotEq(salt1, 0, "salt1 unexpectedly zero.");
