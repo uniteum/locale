@@ -25,7 +25,7 @@ contract AddressLookup is IAddressLookup, IUintToAddressMaker, Prototype {
     /**
      * @inheritdoc IUintToAddressMaker
      */
-    function made(KeyValue[] memory keyValues, uint256 variant)
+    function made(KeyValue[] calldata keyValues, uint256 variant)
         external
         view
         returns (bool exists, address home, bytes32 salt)
@@ -36,7 +36,7 @@ contract AddressLookup is IAddressLookup, IUintToAddressMaker, Prototype {
     /**
      * @inheritdoc IUintToAddressMaker
      */
-    function make(KeyValue[] memory keyValues, uint256 variant) external returns (address home) {
+    function make(KeyValue[] calldata keyValues, uint256 variant) external returns (address home) {
         (, home,) = this.make(encode(keyValues), variant);
     }
 
@@ -59,7 +59,7 @@ contract AddressLookup is IAddressLookup, IUintToAddressMaker, Prototype {
      * @param keyValues The array of key value pairs sorted by key.
      * @return args The bytes blob consumed by {make} and {made}.
      */
-    function encode(KeyValue[] memory keyValues) public pure returns (bytes memory args) {
+    function encode(KeyValue[] calldata keyValues) public pure returns (bytes memory args) {
         args = abi.encode(keyValues);
     }
 }
