@@ -13,11 +13,7 @@ import {Prototype} from "proto/Prototype.sol";
  * The implementation is also a factory; anyone may deploy an ImmutableUintToAddress.
  * @author Paul Reinholdtsen (reinholdtsen.eth)
  */
-contract ImmutableUintToAddress is
-    IUintToAddress,
-    IUintToAddressMaker,
-    Prototype
-{
+contract ImmutableUintToAddress is IUintToAddress, IUintToAddressMaker, Prototype {
     string public constant version = "3.0.0";
 
     /**
@@ -40,21 +36,19 @@ contract ImmutableUintToAddress is
     /**
      * @inheritdoc IUintToAddressMaker
      */
-    function made(
-        KeyValue[] memory keyValues,
-        uint256 variant
-    ) external view returns (bool exists, address home, bytes32 salt) {
+    function made(KeyValue[] memory keyValues, uint256 variant)
+        external
+        view
+        returns (bool exists, address home, bytes32 salt)
+    {
         (exists, home, salt) = this.made(encode(keyValues), variant);
     }
 
     /**
      * @inheritdoc IUintToAddressMaker
      */
-    function make(
-        KeyValue[] memory keyValues,
-        uint256 variant
-    ) external returns (address home) {
-        (, home, ) = this.make(encode(keyValues), variant);
+    function make(KeyValue[] memory keyValues, uint256 variant) external returns (address home) {
+        (, home,) = this.make(encode(keyValues), variant);
     }
 
     /**
@@ -74,9 +68,7 @@ contract ImmutableUintToAddress is
      * @param keyValues The array of key value pairs sorted by key.
      * @return args The bytes blob consumed by {make} and {made}.
      */
-    function encode(
-        KeyValue[] memory keyValues
-    ) public pure returns (bytes memory args) {
+    function encode(KeyValue[] memory keyValues) public pure returns (bytes memory args) {
         args = abi.encode(keyValues);
     }
 }
