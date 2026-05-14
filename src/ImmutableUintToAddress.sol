@@ -6,9 +6,11 @@ import {IUintToAddressMaker} from "ilookup/IUintToAddressMaker.sol";
 import {Prototype} from "proto/Prototype.sol";
 
 /**
- * @notice Immutable map from uint256 to address, with no governance or upgrade risk.
- * @dev Deterministic deployment yields identical addresses across chains.
- * The implementation is also a factory; anyone may deploy an instance.
+ * @notice Immutable map from uint256 to address.
+ * @dev A trustless on-chain lookup with no governance or upgrade risk.
+ * Deterministic deployment yields identical addresses across chains for identical maps.
+ *
+ * The implementation is also a factory; anyone may deploy an ImmutableUintToAddress.
  * @author Paul Reinholdtsen (reinholdtsen.eth)
  */
 contract ImmutableUintToAddress is

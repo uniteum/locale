@@ -1,0 +1,3 @@
+- [feedback_config_repo.md](feedback_config_repo.md) — The shared config repo is "config", not "locale"
+- [feedback_no_gh.md](feedback_no_gh.md) — User does not have gh CLI and doesn't want it
+- [feedback_bash_descriptions.md](feedback_bash_descriptions.md) — Don't use hedging/cautious bash command patterns

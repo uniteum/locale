@@ -10,7 +10,8 @@ import {Prototype} from "proto/Prototype.sol";
  * @dev A trustless cross-chain reference with no governance or upgrade risk.
  * Contracts, SDKs, and UIs can hardcode one address and resolve to the local
  * value on any chain.
- * @dev The implementation is also a factory; anyone may deploy a StringLookup.
+ *
+ * The implementation is also a factory; anyone may deploy a StringLookup.
  * @author Paul Reinholdtsen (reinholdtsen.eth)
  */
 contract StringLookup is Prototype, IStringLookup, IUintToStringMaker {
