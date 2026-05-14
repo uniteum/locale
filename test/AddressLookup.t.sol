@@ -11,9 +11,9 @@ contract AddressLookupTest is Test {
 
     // The contract maps a key and a network to a KV lookup table
     struct Config {
+        AddressLookup.KeyValue[] entries;
         string env;
         string id;
-        AddressLookup.KeyValue[] keyValues;
     }
 
     // setUp() is always run before each test
@@ -27,16 +27,16 @@ contract AddressLookupTest is Test {
 
     // Test make()
     function test_AddressLookupMake() public {
-        address address1 = proto.make(config.keyValues, 0);
+        address address1 = proto.make(config.entries, 0);
         assertNotEq(address1, address(0), "address1 is unexpectedly zero.");
     }
 
     // Test redundant make()
     function test_AddressLookupMake2() public {
-        address address1 = proto.make(config.keyValues, 0);
+        address address1 = proto.make(config.entries, 0);
         assertNotEq(address1, address(0), "address1 is unexpectedly zero.");
 
-        address address2 = proto.make(config.keyValues, 0);
+        address address2 = proto.make(config.entries, 0);
         assertNotEq(address2, address(0), "address2 is unexpectedly zero.");
 
         assertEq(address1, address2, "Second make should return address1.");
@@ -44,16 +44,16 @@ contract AddressLookupTest is Test {
 
     // Test that make() clones to the address that made() predicts
     function test_AddressLookupMakeAddress() public {
-        (, address address1,) = proto.made(config.keyValues, 0);
-        address address2 = proto.make(config.keyValues, 0);
+        (, address address1,) = proto.made(config.entries, 0);
+        address address2 = proto.make(config.entries, 0);
         assertEq(address1, address2, "made() and make() disagree on deployed address.");
     }
 
     // Test that different KVs affect the resulting address.
     function test_AddressLookupMakeDifferentKVsGivesDifferentAddress() public {
-        AddressLookup.KeyValue[] memory altered = config.keyValues;
+        AddressLookup.KeyValue[] memory altered = config.entries;
         altered[0].value = address(42);
-        address address1 = proto.make(config.keyValues, 0);
+        address address1 = proto.make(config.entries, 0);
         address address2 = proto.make(altered, 0);
         assertNotEq(address1, address(0), "make of KVs failed.");
         assertNotEq(address2, address(0), "make of modified KVs failed.");
@@ -71,12 +71,12 @@ contract AddressLookupTest is Test {
         assertEq(address1, address2, "made() and make() should return the same address.");
     }
 
-    // Salt is keccak256(encode(keyValues)) XOR bytes32(variant), where encode() is abi.encode().
+    // Salt is keccak256(encode(entries)) XOR bytes32(variant), where encode() is abi.encode().
     function test_AddressLookupSaltIsXorOfVariant() public view {
         uint256 variant = 7;
-        (,, bytes32 salt) = proto.made(config.keyValues, variant);
+        (,, bytes32 salt) = proto.made(config.entries, variant);
 
-        bytes memory args = proto.encode(config.keyValues);
+        bytes memory args = proto.encode(config.entries);
         bytes32 xorSalt = keccak256(args) ^ bytes32(variant);
         bytes32 absorbedSalt = keccak256(abi.encode(args, variant));
 
@@ -86,9 +86,9 @@ contract AddressLookupTest is Test {
 
     // With variant=0 the XOR form leaves the args-only hash unchanged; the absorbed form does not.
     function test_AddressLookupSaltZeroVariantEqualsArgsHash() public view {
-        (,, bytes32 salt) = proto.made(config.keyValues, 0);
+        (,, bytes32 salt) = proto.made(config.entries, 0);
 
-        bytes memory args = proto.encode(config.keyValues);
+        bytes memory args = proto.encode(config.entries);
         bytes32 argsHash = keccak256(args);
         bytes32 absorbedSalt = keccak256(abi.encode(args, uint256(0)));
 
@@ -100,7 +100,7 @@ contract AddressLookupTest is Test {
     function _predictUnder(uint256 newChainId) internal returns (address predicted, bytes32 salt) {
         uint256 prev = block.chainid;
         vm.chainId(newChainId);
-        (, predicted, salt) = proto.made(config.keyValues, 0);
+        (, predicted, salt) = proto.made(config.entries, 0);
         vm.chainId(prev);
     }
 
@@ -108,7 +108,7 @@ contract AddressLookupTest is Test {
     function _deployUnder(uint256 newChainId) internal returns (address deployed) {
         uint256 prev = block.chainid;
         vm.chainId(newChainId);
-        deployed = proto.make(config.keyValues, 0);
+        deployed = proto.make(config.entries, 0);
         vm.chainId(prev);
     }
 

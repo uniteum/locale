@@ -25,30 +25,30 @@ contract AddressLookup is IAddressLookup, IUintToAddressMaker, Prototype {
     /**
      * @inheritdoc IUintToAddressMaker
      */
-    function made(KeyValue[] calldata keyValues, uint256 variant)
+    function made(KeyValue[] calldata entries, uint256 variant)
         external
         view
         returns (bool exists, address home, bytes32 salt)
     {
-        (exists, home, salt) = this.made(encode(keyValues), variant);
+        (exists, home, salt) = this.made(encode(entries), variant);
     }
 
     /**
      * @inheritdoc IUintToAddressMaker
      */
-    function make(KeyValue[] calldata keyValues, uint256 variant) external returns (address home) {
-        (, home,) = this.make(encode(keyValues), variant);
+    function make(KeyValue[] calldata entries, uint256 variant) external returns (address home) {
+        (, home,) = this.make(encode(entries), variant);
     }
 
     /**
      * @inheritdoc Prototype
-     * @dev Decodes the keyValues array and stores the entry matching the current chain id.
+     * @dev Decodes the entries array and stores the entry matching the current chain id.
      */
     function zzInit(bytes calldata args, uint256) external override onlyProto {
-        KeyValue[] memory keyValues = abi.decode(args, (KeyValue[]));
-        for (uint256 i; i < keyValues.length; ++i) {
-            if (keyValues[i].key == block.chainid) {
-                value = keyValues[i].value;
+        KeyValue[] memory entries = abi.decode(args, (KeyValue[]));
+        for (uint256 i; i < entries.length; ++i) {
+            if (entries[i].key == block.chainid) {
+                value = entries[i].value;
                 break;
             }
         }
@@ -56,10 +56,10 @@ contract AddressLookup is IAddressLookup, IUintToAddressMaker, Prototype {
 
     /**
      * @notice ABI-encode the typed args used to derive a clone's address.
-     * @param keyValues The array of key value pairs sorted by key.
+     * @param entries The array of key value pairs sorted by key.
      * @return args The bytes blob consumed by {make} and {made}.
      */
-    function encode(KeyValue[] calldata keyValues) public pure returns (bytes memory args) {
-        args = abi.encode(keyValues);
+    function encode(KeyValue[] calldata entries) public pure returns (bytes memory args) {
+        args = abi.encode(entries);
     }
 }

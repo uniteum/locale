@@ -36,39 +36,39 @@ contract ImmutableUintToUint is IUintToUint, IUintToUintMaker, Prototype {
     /**
      * @inheritdoc IUintToUintMaker
      */
-    function made(KeyValue[] memory keyValues, uint256 variant)
+    function made(KeyValue[] memory entries, uint256 variant)
         external
         view
         returns (bool exists, address home, bytes32 salt)
     {
-        (exists, home, salt) = this.made(encode(keyValues), variant);
+        (exists, home, salt) = this.made(encode(entries), variant);
     }
 
     /**
      * @inheritdoc IUintToUintMaker
      */
-    function make(KeyValue[] memory keyValues, uint256 variant) external returns (address home) {
-        (, home,) = this.make(encode(keyValues), variant);
+    function make(KeyValue[] memory entries, uint256 variant) external returns (address home) {
+        (, home,) = this.make(encode(entries), variant);
     }
 
     /**
      * @inheritdoc Prototype
-     * @dev Decodes the keyValues array and stores every entry.
+     * @dev Decodes the entries array and stores every entry.
      */
     function zzInit(bytes calldata args, uint256) external override onlyProto {
-        KeyValue[] memory keyValues = abi.decode(args, (KeyValue[]));
-        for (uint256 i; i < keyValues.length; ++i) {
-            keyAt.push(keyValues[i].key);
-            valueOf[keyValues[i].key] = keyValues[i].value;
+        KeyValue[] memory entries = abi.decode(args, (KeyValue[]));
+        for (uint256 i; i < entries.length; ++i) {
+            keyAt.push(entries[i].key);
+            valueOf[entries[i].key] = entries[i].value;
         }
     }
 
     /**
      * @notice ABI-encode the typed args used to derive a clone's address.
-     * @param keyValues The array of key value pairs sorted by key.
+     * @param entries The array of key value pairs sorted by key.
      * @return args The bytes blob consumed by {make} and {made}.
      */
-    function encode(KeyValue[] memory keyValues) public pure returns (bytes memory args) {
-        args = abi.encode(keyValues);
+    function encode(KeyValue[] memory entries) public pure returns (bytes memory args) {
+        args = abi.encode(entries);
     }
 }

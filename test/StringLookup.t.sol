@@ -12,9 +12,9 @@ contract StringLookupTest is Test {
 
     // The contract maps a key and a network to a KV lookup table
     struct Config {
+        IUintToStringMaker.KeyValue[] entries;
         string env;
         string id;
-        IUintToStringMaker.KeyValue[] keyValues;
     }
 
     // setUp() is always run before each test
@@ -28,16 +28,16 @@ contract StringLookupTest is Test {
 
     // Test make()
     function test_StringLookupMake() public {
-        address address1 = proto.make(config.keyValues, 0);
+        address address1 = proto.make(config.entries, 0);
         assertNotEq(address1, address(0), "address1 is unexpectedly zero.");
     }
 
     // Test redundant make()
     function test_StringLookupMake2() public {
-        address address1 = proto.make(config.keyValues, 0);
+        address address1 = proto.make(config.entries, 0);
         assertNotEq(address1, address(0), "address1 is unexpectedly zero.");
 
-        address address2 = proto.make(config.keyValues, 0);
+        address address2 = proto.make(config.entries, 0);
         assertNotEq(address2, address(0), "address2 is unexpectedly zero.");
 
         assertEq(address1, address2, "Second make should return address1.");
@@ -45,16 +45,16 @@ contract StringLookupTest is Test {
 
     // Test that make() clones to the address that made() predicts
     function test_StringLookupMakeAddress() public {
-        (, address address1,) = proto.made(config.keyValues, 0);
-        address address2 = proto.make(config.keyValues, 0);
+        (, address address1,) = proto.made(config.entries, 0);
+        address address2 = proto.make(config.entries, 0);
         assertEq(address1, address2, "made() and make() disagree on deployed address.");
     }
 
     // Test that different KVs affect the resulting address.
     function test_StringLookupMakeDifferentKVsGivesDifferentAddress() public {
-        IUintToStringMaker.KeyValue[] memory altered = config.keyValues;
+        IUintToStringMaker.KeyValue[] memory altered = config.entries;
         altered[0].value = "https://different.example/rpc";
-        address address1 = proto.make(config.keyValues, 0);
+        address address1 = proto.make(config.entries, 0);
         address address2 = proto.make(altered, 0);
         assertNotEq(address1, address(0), "make of KVs failed.");
         assertNotEq(address2, address(0), "make of modified KVs failed.");
@@ -72,13 +72,13 @@ contract StringLookupTest is Test {
         assertEq(address1, address2, "made() and make() should return the same address.");
     }
 
-    // Salt is keccak256(abi.encode(keyValues)) XOR bytes32(variant), not abi.encode(keyValues, variant).
+    // Salt is keccak256(abi.encode(entries)) XOR bytes32(variant), not abi.encode(entries, variant).
     function test_StringLookupSaltIsXorOfVariant() public view {
         uint256 variant = 7;
-        (,, bytes32 salt) = proto.made(config.keyValues, variant);
+        (,, bytes32 salt) = proto.made(config.entries, variant);
 
-        bytes32 xorSalt = keccak256(abi.encode(config.keyValues)) ^ bytes32(variant);
-        bytes32 absorbedSalt = keccak256(abi.encode(config.keyValues, variant));
+        bytes32 xorSalt = keccak256(abi.encode(config.entries)) ^ bytes32(variant);
+        bytes32 absorbedSalt = keccak256(abi.encode(config.entries, variant));
 
         assertEq(salt, xorSalt, "salt should be keccak(abi.encode(kvs)) XOR variant");
         assertNotEq(salt, absorbedSalt, "salt should not absorb variant inside abi.encode");
@@ -86,10 +86,10 @@ contract StringLookupTest is Test {
 
     // With variant=0 the XOR form leaves the kv-only hash unchanged; the absorbed form does not.
     function test_StringLookupSaltZeroVariantEqualsKvHash() public view {
-        (,, bytes32 salt) = proto.made(config.keyValues, 0);
+        (,, bytes32 salt) = proto.made(config.entries, 0);
 
-        bytes32 kvHash = keccak256(abi.encode(config.keyValues));
-        bytes32 absorbedSalt = keccak256(abi.encode(config.keyValues, uint256(0)));
+        bytes32 kvHash = keccak256(abi.encode(config.entries));
+        bytes32 absorbedSalt = keccak256(abi.encode(config.entries, uint256(0)));
 
         assertEq(salt, kvHash, "salt with variant=0 should equal keccak(abi.encode(kvs))");
         assertNotEq(salt, absorbedSalt, "salt should not equal abi.encode(kvs, 0) hash");
@@ -99,7 +99,7 @@ contract StringLookupTest is Test {
     function _predictUnder(uint256 newChainId) internal returns (address predicted, bytes32 salt) {
         uint256 prev = block.chainid;
         vm.chainId(newChainId);
-        (, predicted, salt) = proto.made(config.keyValues, 0);
+        (, predicted, salt) = proto.made(config.entries, 0);
         vm.chainId(prev);
     }
 
@@ -107,7 +107,7 @@ contract StringLookupTest is Test {
     function _deployUnder(uint256 newChainId) internal returns (address deployed) {
         uint256 prev = block.chainid;
         vm.chainId(newChainId);
-        deployed = proto.make(config.keyValues, 0);
+        deployed = proto.make(config.entries, 0);
         vm.chainId(prev);
     }
 
@@ -147,11 +147,11 @@ contract StringLookupTest is Test {
 
     // Test that the value stored matches the keyValue for the current chain.
     function test_StringLookupValueMatchesCurrentChain() public {
-        uint256 expectedKey = config.keyValues[0].key;
-        string memory expectedValue = config.keyValues[0].value;
+        uint256 expectedKey = config.entries[0].key;
+        string memory expectedValue = config.entries[0].value;
 
         vm.chainId(expectedKey);
-        StringLookup home = StringLookup(proto.make(config.keyValues, 0));
+        StringLookup home = StringLookup(proto.make(config.entries, 0));
 
         assertEq(home.value(), expectedValue, "value() should match the keyValue for the current chain");
     }
@@ -160,12 +160,12 @@ contract StringLookupTest is Test {
     function test_StringLookupValueEmptyWhenNoMatch() public {
         // Pick a chain id that is not in the config.
         uint256 unmatched = 424242;
-        for (uint256 i; i < config.keyValues.length; ++i) {
-            require(config.keyValues[i].key != unmatched, "test fixture collides with unmatched id");
+        for (uint256 i; i < config.entries.length; ++i) {
+            require(config.entries[i].key != unmatched, "test fixture collides with unmatched id");
         }
 
         vm.chainId(unmatched);
-        StringLookup home = StringLookup(proto.make(config.keyValues, 0));
+        StringLookup home = StringLookup(proto.make(config.entries, 0));
 
         assertEq(home.value(), "", "value() should be empty when no key matches block.chainid");
     }
