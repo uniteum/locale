@@ -14,24 +14,13 @@ import {Prototype} from "proto/Prototype.sol";
  * The implementation is also a factory; anyone may deploy a StringLookup.
  * @author Paul Reinholdtsen (reinholdtsen.eth)
  */
-contract StringLookup is Prototype, IStringLookup, IUintToStringMaker {
+contract StringLookup is IStringLookup, IUintToStringMaker, Prototype {
     string public constant version = "3.0.0";
 
     /**
      * @inheritdoc IStringLookup
      */
     string public value;
-
-    /**
-     * @notice ABI-encode the typed args used to derive a clone's address.
-     * @param keyValues The array of key value pairs sorted by key.
-     * @return args The bytes blob consumed by {make} and {made}.
-     */
-    function encode(
-        KeyValue[] memory keyValues
-    ) public pure returns (bytes memory args) {
-        args = abi.encode(keyValues);
-    }
 
     /**
      * @inheritdoc IUintToStringMaker
@@ -65,5 +54,16 @@ contract StringLookup is Prototype, IStringLookup, IUintToStringMaker {
                 break;
             }
         }
+    }
+
+    /**
+     * @notice ABI-encode the typed args used to derive a clone's address.
+     * @param keyValues The array of key value pairs sorted by key.
+     * @return args The bytes blob consumed by {make} and {made}.
+     */
+    function encode(
+        KeyValue[] memory keyValues
+    ) public pure returns (bytes memory args) {
+        args = abi.encode(keyValues);
     }
 }

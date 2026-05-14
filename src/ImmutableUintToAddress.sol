@@ -14,9 +14,9 @@ import {Prototype} from "proto/Prototype.sol";
  * @author Paul Reinholdtsen (reinholdtsen.eth)
  */
 contract ImmutableUintToAddress is
-    Prototype,
     IUintToAddress,
-    IUintToAddressMaker
+    IUintToAddressMaker,
+    Prototype
 {
     string public constant version = "3.0.0";
 
@@ -35,17 +35,6 @@ contract ImmutableUintToAddress is
      */
     function length() external view returns (uint256) {
         return keyAt.length;
-    }
-
-    /**
-     * @notice ABI-encode the typed args used to derive a clone's address.
-     * @param keyValues The array of key value pairs sorted by key.
-     * @return args The bytes blob consumed by {make} and {made}.
-     */
-    function encode(
-        KeyValue[] memory keyValues
-    ) public pure returns (bytes memory args) {
-        args = abi.encode(keyValues);
     }
 
     /**
@@ -78,5 +67,16 @@ contract ImmutableUintToAddress is
             keyAt.push(keyValues[i].key);
             valueOf[keyValues[i].key] = keyValues[i].value;
         }
+    }
+
+    /**
+     * @notice ABI-encode the typed args used to derive a clone's address.
+     * @param keyValues The array of key value pairs sorted by key.
+     * @return args The bytes blob consumed by {make} and {made}.
+     */
+    function encode(
+        KeyValue[] memory keyValues
+    ) public pure returns (bytes memory args) {
+        args = abi.encode(keyValues);
     }
 }

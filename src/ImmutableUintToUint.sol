@@ -13,7 +13,7 @@ import {Prototype} from "proto/Prototype.sol";
  * The implementation is also a factory; anyone may deploy an ImmutableUintToUint.
  * @author Paul Reinholdtsen (reinholdtsen.eth)
  */
-contract ImmutableUintToUint is Prototype, IUintToUint, IUintToUintMaker {
+contract ImmutableUintToUint is IUintToUint, IUintToUintMaker, Prototype {
     string public constant version = "3.0.0";
 
     /**
@@ -31,17 +31,6 @@ contract ImmutableUintToUint is Prototype, IUintToUint, IUintToUintMaker {
      */
     function length() external view returns (uint256) {
         return keyAt.length;
-    }
-
-    /**
-     * @notice ABI-encode the typed args used to derive a clone's address.
-     * @param keyValues The array of key value pairs sorted by key.
-     * @return args The bytes blob consumed by {make} and {made}.
-     */
-    function encode(
-        KeyValue[] memory keyValues
-    ) public pure returns (bytes memory args) {
-        args = abi.encode(keyValues);
     }
 
     /**
@@ -74,5 +63,16 @@ contract ImmutableUintToUint is Prototype, IUintToUint, IUintToUintMaker {
             keyAt.push(keyValues[i].key);
             valueOf[keyValues[i].key] = keyValues[i].value;
         }
+    }
+
+    /**
+     * @notice ABI-encode the typed args used to derive a clone's address.
+     * @param keyValues The array of key value pairs sorted by key.
+     * @return args The bytes blob consumed by {make} and {made}.
+     */
+    function encode(
+        KeyValue[] memory keyValues
+    ) public pure returns (bytes memory args) {
+        args = abi.encode(keyValues);
     }
 }

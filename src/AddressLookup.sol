@@ -14,24 +14,13 @@ import {Prototype} from "proto/Prototype.sol";
  * The implementation is also a factory; anyone may deploy an AddressLookup.
  * @author Paul Reinholdtsen (reinholdtsen.eth)
  */
-contract AddressLookup is Prototype, IAddressLookup, IUintToAddressMaker {
+contract AddressLookup is IAddressLookup, IUintToAddressMaker, Prototype {
     string public constant version = "3.0.0";
 
     /**
      * @inheritdoc IAddressLookup
      */
     address public value;
-
-    /**
-     * @notice ABI-encode the typed args used to derive a clone's address.
-     * @param keyValues The array of key value pairs sorted by key.
-     * @return args The bytes blob consumed by {make} and {made}.
-     */
-    function encode(
-        KeyValue[] memory keyValues
-    ) public pure returns (bytes memory args) {
-        args = abi.encode(keyValues);
-    }
 
     /**
      * @inheritdoc IUintToAddressMaker
@@ -65,5 +54,16 @@ contract AddressLookup is Prototype, IAddressLookup, IUintToAddressMaker {
                 break;
             }
         }
+    }
+
+    /**
+     * @notice ABI-encode the typed args used to derive a clone's address.
+     * @param keyValues The array of key value pairs sorted by key.
+     * @return args The bytes blob consumed by {make} and {made}.
+     */
+    function encode(
+        KeyValue[] memory keyValues
+    ) public pure returns (bytes memory args) {
+        args = abi.encode(keyValues);
     }
 }
