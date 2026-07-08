@@ -1,7 +1,7 @@
 {
   "env": "test",
   "id": "eid",
-  "keyValues": [
+  "entries": [
     {
       "key": 97,
       "value": 40102

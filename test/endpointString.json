@@ -1,7 +1,7 @@
 {
   "env": "test",
   "id": "endpointString",
-  "keyValues": [
+  "entries": [
     {
       "key": 97,
       "value": "https://bsc-testnet.example/rpc"

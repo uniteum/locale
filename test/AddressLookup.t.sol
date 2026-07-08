@@ -11,9 +11,9 @@ contract AddressLookupTest is Test {
 
     // The contract maps a key and a network to a KV lookup table
     struct Config {
+        AddressLookup.Entry[] entries;
         string env;
         string id;
-        AddressLookup.KeyValue[] keyValues;
     }
 
     // setUp() is always run before each test
@@ -27,16 +27,16 @@ contract AddressLookupTest is Test {
 
     // Test make()
     function test_AddressLookupMake() public {
-        address address1 = proto.make(config.keyValues, 0);
+        address address1 = proto.make(config.entries, 0);
         assertNotEq(address1, address(0), "address1 is unexpectedly zero.");
     }
 
     // Test redundant make()
     function test_AddressLookupMake2() public {
-        address address1 = proto.make(config.keyValues, 0);
+        address address1 = proto.make(config.entries, 0);
         assertNotEq(address1, address(0), "address1 is unexpectedly zero.");
 
-        address address2 = proto.make(config.keyValues, 0);
+        address address2 = proto.make(config.entries, 0);
         assertNotEq(address2, address(0), "address2 is unexpectedly zero.");
 
         assertEq(address1, address2, "Second make should return address1.");
@@ -44,16 +44,16 @@ contract AddressLookupTest is Test {
 
     // Test that make() clones to the address that made() predicts
     function test_AddressLookupMakeAddress() public {
-        (, address address1,) = proto.made(config.keyValues, 0);
-        address address2 = proto.make(config.keyValues, 0);
+        (, address address1,) = proto.made(config.entries, 0);
+        address address2 = proto.make(config.entries, 0);
         assertEq(address1, address2, "made() and make() disagree on deployed address.");
     }
 
     // Test that different KVs affect the resulting address.
     function test_AddressLookupMakeDifferentKVsGivesDifferentAddress() public {
-        AddressLookup.KeyValue[] memory altered = config.keyValues;
+        AddressLookup.Entry[] memory altered = config.entries;
         altered[0].value = address(42);
-        address address1 = proto.make(config.keyValues, 0);
+        address address1 = proto.make(config.entries, 0);
         address address2 = proto.make(altered, 0);
         assertNotEq(address1, address(0), "make of KVs failed.");
         assertNotEq(address2, address(0), "make of modified KVs failed.");
@@ -62,7 +62,7 @@ contract AddressLookupTest is Test {
 
     // Test that empty KVs is acceptable (This should probably be reversed but it's currently allowed)
     function test_AddressLookupEmptyConfigIsDeterministic() public {
-        AddressLookup.KeyValue[] memory empty;
+        AddressLookup.Entry[] memory empty;
         (, address address1, bytes32 salt1) = proto.made(empty, 0);
         assertNotEq(address1, address(0), "made() on empty KVs failed.");
         assertNotEq(salt1, 0, "salt1 unexpectedly zero.");
@@ -71,34 +71,36 @@ contract AddressLookupTest is Test {
         assertEq(address1, address2, "made() and make() should return the same address.");
     }
 
-    // Salt is keccak256(abi.encode(keyValues)) XOR bytes32(variant), not abi.encode(keyValues, variant).
+    // Salt is keccak256(encode(entries)) XOR bytes32(variant), where encode() is abi.encode().
     function test_AddressLookupSaltIsXorOfVariant() public view {
         uint256 variant = 7;
-        (,, bytes32 salt) = proto.made(config.keyValues, variant);
+        (,, bytes32 salt) = proto.made(config.entries, variant);
 
-        bytes32 xorSalt = keccak256(abi.encode(config.keyValues)) ^ bytes32(variant);
-        bytes32 absorbedSalt = keccak256(abi.encode(config.keyValues, variant));
+        bytes memory args = proto.encode(config.entries);
+        bytes32 xorSalt = keccak256(args) ^ bytes32(variant);
+        bytes32 absorbedSalt = keccak256(abi.encode(args, variant));
 
-        assertEq(salt, xorSalt, "salt should be keccak(abi.encode(kvs)) XOR variant");
+        assertEq(salt, xorSalt, "salt should be keccak(args) XOR variant");
         assertNotEq(salt, absorbedSalt, "salt should not absorb variant inside abi.encode");
     }
 
-    // With variant=0 the XOR form leaves the kv-only hash unchanged; the absorbed form does not.
-    function test_AddressLookupSaltZeroVariantEqualsKvHash() public view {
-        (,, bytes32 salt) = proto.made(config.keyValues, 0);
+    // With variant=0 the XOR form leaves the args-only hash unchanged; the absorbed form does not.
+    function test_AddressLookupSaltZeroVariantEqualsArgsHash() public view {
+        (,, bytes32 salt) = proto.made(config.entries, 0);
 
-        bytes32 kvHash = keccak256(abi.encode(config.keyValues));
-        bytes32 absorbedSalt = keccak256(abi.encode(config.keyValues, uint256(0)));
+        bytes memory args = proto.encode(config.entries);
+        bytes32 argsHash = keccak256(args);
+        bytes32 absorbedSalt = keccak256(abi.encode(args, uint256(0)));
 
-        assertEq(salt, kvHash, "salt with variant=0 should equal keccak(abi.encode(kvs))");
-        assertNotEq(salt, absorbedSalt, "salt should not equal abi.encode(kvs, 0) hash");
+        assertEq(salt, argsHash, "salt with variant=0 should equal keccak(args)");
+        assertNotEq(salt, absorbedSalt, "salt should not equal abi.encode(args, 0) hash");
     }
 
     // Helper for switching chain-ids during made()
     function _predictUnder(uint256 newChainId) internal returns (address predicted, bytes32 salt) {
         uint256 prev = block.chainid;
         vm.chainId(newChainId);
-        (, predicted, salt) = proto.made(config.keyValues, 0);
+        (, predicted, salt) = proto.made(config.entries, 0);
         vm.chainId(prev);
     }
 
@@ -106,7 +108,7 @@ contract AddressLookupTest is Test {
     function _deployUnder(uint256 newChainId) internal returns (address deployed) {
         uint256 prev = block.chainid;
         vm.chainId(newChainId);
-        deployed = proto.make(config.keyValues, 0);
+        deployed = proto.make(config.entries, 0);
         vm.chainId(prev);
     }
 
